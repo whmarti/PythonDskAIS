@@ -3,7 +3,7 @@
 # Auckland Institute of Studies
 # Developers: William Martin, June , Sun....
 # Date of creation 03/11/2021
-#***********************************************************************
+#*************************************************************************
 from tkinter.filedialog import askopenfile 
 from tkinter import *
 from tkinter.ttk import *
