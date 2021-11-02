@@ -1,4 +1,9 @@
-
+#*************************************************************************
+# Develop of Courses Outline
+# Auckland Institute of Studies
+# Developers: William Martin, June , Sun....
+# Date of creation 03/11/2021
+#***********************************************************************
 from tkinter.filedialog import askopenfile 
 from tkinter import *
 from tkinter.ttk import *
@@ -129,7 +134,7 @@ def open_file():
             messagebox.showerror(title="INFORMATION", message='No file chosen, Insert the file again!')
         # pass
 
-def uploadFiles():
+def uploadFiles(): 
     if original != "":
         pb1 = Progressbar(
                 root, 
