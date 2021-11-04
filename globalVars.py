@@ -6,7 +6,12 @@
 # File: Definition of Global variables
 #*************************************************************************
 #File variables
-global original,fileSize,target
+from tkinter.constants import FALSE
+
+
+global fileSize,target
+original = ''
+fName = ''
 
 #Variables of position of controls --------------------------------------
 
@@ -18,7 +23,7 @@ yBtnPos=110  #Button Upload
 
 
 #Comboboxes:
-# ycbxPos=120
+# ycbxPos=120  selected_month = tk.StringVar()
 xCbxLbl=120
 #-------------------------------------------------------------------------
 
@@ -38,10 +43,20 @@ bgSL='#5a7684'   # Seg Line Color
 #-------------------------------------------------------------------------
 
 #Variables of logic ----------------------------------------------------
+# Logic:
+state = FALSE
+# Controls:
+years = ('Select >','2020', '2021', '2022', '2024')
+months = ('Select >','1', '2', '3')
+fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
+
+#-------------------------------------------------------------------------
+
+#Form Variables ----------------------------------------------------------
 
 # Controls:
-years = ('2020', '2021', '2022', '2024')
-months = ('1', '2', '3')
-fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
+global upld
+global trimester_cb, year_cb, entry_name, entry_email
+
 
 #-------------------------------------------------------------------------
