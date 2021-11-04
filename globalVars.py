@@ -25,6 +25,7 @@ yBtnPos=110  #Button Upload
 #Comboboxes:
 # ycbxPos=120  selected_month = tk.StringVar()
 xCbxLbl=120
+lblFile = ''    #File name
 #-------------------------------------------------------------------------
 
 #Variables of controls ----------------------------------------------------

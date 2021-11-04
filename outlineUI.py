@@ -1,5 +1,5 @@
 #*************************************************************************
-# Develop of Courses Outline Hola Developer 1 esto se aprobo.
+# Develop of Courses Outline 
 # Auckland Institute of Studies
 # Developers: William Martin, June , Sun....
 # Date of creation 03/11/2021
@@ -16,13 +16,16 @@ import docx,shutil,os,globalVars as gv
 class Root(Tk):
     def __init__(self):
         super(Root, self).__init__()
+
         self.title("Course Outline Generator")
         self.geometry('700x500')
         self.minsize(640,400)
+        self.resizable(False, False)
 
 #<editor-fold desc="Logic Functions">
-    def uploadFiles(self): 
+    def uploadFiles(self):
         if gv.fName != "":
+            gv.lblFile.config(text=gv.fName)
             pb1 = Progressbar(
                     root, 
                     orient=HORIZONTAL, 
@@ -59,13 +62,13 @@ class Root(Tk):
         else:
             messagebox.showerror(title="INFORMATION", message='Insert the File!')
 
-    def open_file(self):
+    def open_file(self):        
         file_path = askopenfile(mode='r', filetypes=[('Doc Files', '*docx')])
         if file_path is not None:
             gv.original=file_path.name
             # print (gv.original)
             pos = gv.original.rfind("/")
-            gv.fName = gv.original[pos+1:len(gv.original)+1]
+            gv.fName=(gv.original[pos+1:len(gv.original)+1])            
             print (gv.fName)
             gv.fileSize = os.path.getsize(gv.original)
             print('Size del archivo: ' + str(gv.fileSize))
@@ -101,6 +104,7 @@ class Root(Tk):
                             print(tmp_text)
                             break
             document.save('docs/'+gv.fName)
+            
             messagebox.showinfo(title="INFORMATION", message='File updated, Course descriptor loaded.')
         # else:
         #      messagebox.showinfo(title="INFORMATION", message='There are inconsistencies in the information provided, please verify.')
@@ -119,6 +123,9 @@ class Root(Tk):
         gv.upld = tk.Button(self,text='Upload a Course Descriptor' , width=30,bg="blue",fg='white',activebackground='#0052cc', activeforeground='#aaffaa',command = self.open_file )
         gv.upld.place(x=gv.xPosL,y=gv.yPos)
         gv.yBtnPos = gv.yPos
+        #File label:
+        gv.lblFile = tk.Label(self,textvariable=gv.fName, width=15,font=(gv.lbFont,gv.lbSize),fg='blue')
+        gv.lblFile.place(x=gv.xPosL+260,y=gv.yPos+2)
         gv.yPos += 30
         label_upl = tk.Label(self,text="Accepted file types: .doc and .docx (2MB limit)", width=35,font=(gv.lbFont,gv.lbSize))
         label_upl.place(x=gv.xPosL,y=gv.yPos)
@@ -232,7 +239,7 @@ class Root(Tk):
 #</editor-fold>
 
 if __name__ == '__main__':
-    root = Root()
+    root = Root()    
     logoImg = (Image.open("img/logo.jpg"))
     resizedImg = logoImg.resize((120,50), Image.ANTIALIAS)
     logoImg = ImageTk.PhotoImage(resizedImg)
