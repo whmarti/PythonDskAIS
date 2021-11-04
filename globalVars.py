@@ -5,7 +5,7 @@
 # Date: 03/11/2021
 # File: Definition of Global variables
 #*************************************************************************
-#File variables
+#File of variables
 from tkinter.constants import FALSE
 
 
