@@ -91,8 +91,8 @@ class Root(Tk):
         print("Trimestre: %s\nYear: %s" % (gv.trimester_cb.get(), gv.year_cb.get()))
         print("Name: %s\nEnail: %s" % (gv.entry_name.get(), gv.entry_email.get())) 
         res = self.validateForm()
-        if res:
-            document = docx.Document('docs/'+gv.fName)
+        if res and len(gv.fName)>0:
+            document = docx.Document('docs/'+gv.targetDoc) 
             for par in document.paragraphs:  # to extract the whole text
                 for i in range(len(gv.fieldsDocx)):
                     if gv.fieldsDocx[i] in par.text:
@@ -104,11 +104,10 @@ class Root(Tk):
                             print(tmp_text)
                             break
             document.save('docs/'+gv.fName)
-            
+
             messagebox.showinfo(title="INFORMATION", message='File updated, Course descriptor loaded.')
         # else:
         #      messagebox.showinfo(title="INFORMATION", message='There are inconsistencies in the information provided, please verify.')
-
 #</editor-fold>
 
 #<editor-fold desc="Constructors">
@@ -124,8 +123,8 @@ class Root(Tk):
         gv.upld.place(x=gv.xPosL,y=gv.yPos)
         gv.yBtnPos = gv.yPos
         #File label:
-        gv.lblFile = tk.Label(self,textvariable=gv.fName, width=15,font=(gv.lbFont,gv.lbSize),fg='blue')
-        gv.lblFile.place(x=gv.xPosL+260,y=gv.yPos+2)
+        gv.lblFile = tk.Label(self,textvariable=gv.fName, width=35,font=(gv.lbFont,gv.lbSize),fg='blue')
+        gv.lblFile.place(x=gv.xPosL+240,y=gv.yPos+2)
         gv.yPos += 30
         label_upl = tk.Label(self,text="Accepted file types: .doc and .docx (2MB limit)", width=35,font=(gv.lbFont,gv.lbSize))
         label_upl.place(x=gv.xPosL,y=gv.yPos)
@@ -234,9 +233,9 @@ class Root(Tk):
         except Exception as ep:
             messagebox.showerror('Error: ', ep)
         return res
-
-
 #</editor-fold>
+
+
 
 if __name__ == '__main__':
     root = Root()    

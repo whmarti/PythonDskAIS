@@ -9,7 +9,8 @@
 from tkinter.constants import FALSE
 
 
-global fileSize,target
+global fileSize,target,targetDoc
+targetDoc = 'TempleteCO.docx'
 original = ''
 fName = ''
 
@@ -47,7 +48,7 @@ bgSL='#5a7684'   # Seg Line Color
 # Logic:
 state = FALSE
 # Controls:
-years = ('Select >','2020', '2021', '2022', '2024')
+years = ('Select >','2020', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
 fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
 
