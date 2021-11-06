@@ -9,7 +9,8 @@
 from tkinter.constants import FALSE
 
 
-global fileSize,target,targetDoc
+global fileSize,target,originalDoc,targetDoc
+originalDoc = 'docOrigin/TempleteCO.docx'
 targetDoc = 'TempleteCO.docx'
 original = ''
 fName = ''
@@ -48,7 +49,7 @@ bgSL='#5a7684'   # Seg Line Color
 # Logic:
 state = FALSE
 # Controls:
-years = ('Select >','2020', '2021', '2022', '2023')
+years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
 fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
 
@@ -58,7 +59,18 @@ fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
 
 # Controls:
 global upld
-global trimester_cb, year_cb, entry_name, entry_email
-
-
+global trimester_cb, year_cb
+rbCoursePerson=''
+global entry_name, entry_room, entry_phone1, entry_phone2, entry_ext, entry_email, entry_contHour, entry_contMinute
+#Max. fields length:
+mxNa=50
+mxRo=10
+mxph1=4
+mxph2=10
+mxph3=4
+mxEm=70
+# Logic:
+global vcmd   #Validate the integrity of the value.
+emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'   #Validate the integrity of the email.
+textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
 #-------------------------------------------------------------------------

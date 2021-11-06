@@ -4,24 +4,44 @@
 # Developers: William Martin, June , Sun....
 # Date of creation 03/11/2021
 #*************************************************************************
-from tkinter.filedialog import askopenfile 
+from tkinter.filedialog import askopenfile,askdirectory
 from tkinter import *
 from tkinter.ttk import Progressbar,Button
 from PIL import ImageTk, Image
-from tkinter.messagebox import showinfo
+#from tkinter.messagebox import showinfo
 from tkinter import ttk , messagebox
-import tkinter as tk,time, pandas as pd
+import tkinter as tk,time, re #, pandas as pd
 import docx,shutil,os,globalVars as gv
+
 
 class Root(Tk):
     def __init__(self):
+        
         super(Root, self).__init__()
-
+        
+        gv.vcmd = (self.register(self.isNumeric))
+        #Window mesures:
         self.title("Course Outline Generator")
         self.geometry('700x500')
-        self.minsize(640,400)
+        self.minsize(640,600)
         self.resizable(False, False)
-
+        #Form limits:
+        self.rbCoursePerson=tk.StringVar()
+        self.rbCoursePerson.set('Lecturer')
+        self.nameValue = StringVar()
+        self.nameValue.trace("w", lambda *args: self.character_limit(self.nameValue, gv.mxNa))
+        self.ph1Value = StringVar()
+        self.ph1Value.trace("w", lambda *args: self.field_limit(self.ph1Value, gv.mxph1))
+        self.ph2Value = StringVar()
+        self.ph2Value.trace("w", lambda *args: self.field_limit(self.ph2Value, gv.mxph2))
+        self.ph3Value = StringVar()
+        self.ph3Value.trace("w", lambda *args: self.field_limit(self.ph3Value, gv.mxph3))
+        self.emailValue = StringVar()
+        self.emailValue.trace("w", lambda *args: self.character_limit(self.emailValue, gv.mxEm))
+        self.roomValue = StringVar()
+        self.roomValue.trace("w", lambda *args: self.character_limit(self.roomValue, gv.mxRo))  
+        self.hourValue = StringVar()
+        self.hourValue.trace("w", lambda *args: self.check_hour(self.hourValue, 2))
 #<editor-fold desc="Logic Functions">
     def uploadFiles(self):
         if gv.fName != "":
@@ -62,19 +82,21 @@ class Root(Tk):
         else:
             messagebox.showerror(title="INFORMATION", message='Insert the File!')
 
-    def open_file(self):        
+    def open_file(self):
         file_path = askopenfile(mode='r', filetypes=[('Doc Files', '*docx')])
         if file_path is not None:
             gv.original=file_path.name
             # print (gv.original)
             pos = gv.original.rfind("/")
-            gv.fName=(gv.original[pos+1:len(gv.original)+1])            
+            gv.fName=(gv.original[pos+1:len(gv.original)+1])
             print (gv.fName)
             gv.fileSize = os.path.getsize(gv.original)
             print('Size del archivo: ' + str(gv.fileSize))
-            gv.state = True
-            self.ableControls(gv.state)
-            self.uploadFiles()
+            if(int(gv.fileSize)<2097153):
+                gv.state = True
+                self.ableControls(gv.state)
+                self.uploadFiles()
+            else: messagebox.showwarning(title="INFORMATION", message='File size too big, choose a file with size < 2 Mb!')
         else:
             if gv.original == "":
                 gv.state = False
@@ -86,28 +108,40 @@ class Root(Tk):
         w.place(y=gv.yPos,x=0)
         w.config( background=gv.bgSL)
 
-    def update_document(self):
+    def updateDocum(self):
         valuesDocx = [gv.entry_name.get(), gv.entry_email.get()]
+        print("Person: " + self.rbCoursePerson.get())
         print("Trimestre: %s\nYear: %s" % (gv.trimester_cb.get(), gv.year_cb.get()))
         print("Name: %s\nEnail: %s" % (gv.entry_name.get(), gv.entry_email.get())) 
+        flag=0
+        fieldsCopied=0
         res = self.validateForm()
-        if res and len(gv.fName)>0:
-            document = docx.Document('docs/'+gv.targetDoc) 
-            for par in document.paragraphs:  # to extract the whole text
-                for i in range(len(gv.fieldsDocx)):
-                    if gv.fieldsDocx[i] in par.text:
-                        if len(valuesDocx[i])>0:
-                            tmp_text = par.text
-                            print(tmp_text)
-                            tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
-                            par.text=tmp_text
-                            print(tmp_text)
-                            break
-            document.save('docs/'+gv.fName)
-
-            messagebox.showinfo(title="INFORMATION", message='File updated, Course descriptor loaded.')
-        # else:
-        #      messagebox.showinfo(title="INFORMATION", message='There are inconsistencies in the information provided, please verify.')
+        try:
+            if res and len(gv.fName)>0:
+                document = docx.Document(gv.originalDoc)
+                for par in document.paragraphs:  # to extract the whole text
+                    if self.rbCoursePerson.get()+":" in par.text:
+                        flag=1
+                    if flag==1:
+                        for i in range(len(gv.fieldsDocx)):
+                            if gv.fieldsDocx[i] in par.text:
+                                if len(valuesDocx[i])>0:
+                                    tmp_text = par.text
+                                    print(tmp_text)
+                                    tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
+                                    fieldsCopied+=1
+                                    par.text=tmp_text
+                                    print(tmp_text)
+                                    break
+                        if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
+                document.save('docs/'+gv.targetDoc)
+                dirname = askdirectory()
+                if dirname!='':
+                    document.save(dirname+'/'+gv.targetDoc)
+                # self.clearControls()
+                    messagebox.showinfo(title="SUCCESS", message='File updated, Course descriptor loaded.')
+        except PermissionError:
+            messagebox.showinfo(title="INFORMATION", message='The document is not accesible. It can be open if so close it, please check.')
 #</editor-fold>
 
 #<editor-fold desc="Constructors">
@@ -135,7 +169,7 @@ class Root(Tk):
     def createPeriod(self):
         label_trimester =tk.Label(self,text="Trimester", width=8,font=(gv.lbFont,gv.lbSize))
         label_trimester.place(x=gv.xCbxLbl,y=gv.yPos)
-        gv.xCbxLbl+=100        
+        gv.xCbxLbl+=100
         gv.trimester_cb = ttk.Combobox(self)
         gv.trimester_cb['values'] = gv.months
         gv.trimester_cb['state'] = 'readonly'
@@ -151,57 +185,107 @@ class Root(Tk):
         gv.year_cb['values'] = gv.years
         gv.year_cb['state'] = 'readonly'
         gv.year_cb.config(width=10)
-        gv.year_cb.current(0)
+        gv.year_cb.current(1)
         gv.year_cb.place(x=gv.xCbxLbl,y=gv.yPos)
         gv.yPos+=33
         self.segmentLine()
         gv.yPos+=20
-
+   
     def createLecturerInf(self):
         lectHeading = tk.Label(self, text="Lecturer Information")
         lectHeading.config(font=(gv.tFont, gv.stSize),fg=gv.stColor)
         lectHeading.place(x=gv.xPosL, y=gv.yPos)
         gv.yPos+=30
-        var=tk.StringVar()
-        tk.Radiobutton(self,text="Lecturer",padx= 5, variable= var, value="Lecturer").place(x=gv.xPosL,y=gv.yPos)
-        tk.Radiobutton(self,text="Course Coordinator",padx= 20, variable= var, value="Course Coordinator").place(x=gv.xPosF,y=gv.yPos)
+        # gv.rbCoursePerson
+        self.rb1=tk.Radiobutton(self,text="Lecturer",padx= 5, variable=self.rbCoursePerson, value="Lecturer").place(x=gv.xPosL,y=gv.yPos)
+        self.rb2=tk.Radiobutton(self,text="Course Coordinator",padx= 20, variable=self.rbCoursePerson, value="Course Coordinator").place(x=gv.xPosF,y=gv.yPos)
         gv.yPos+=40
         label_name =tk.Label(self,text="Full Name", width=8,font=(gv.lbFont,gv.lbSize))
         label_name.place(x=gv.xPosL,y=gv.yPos)
-
-        gv.entry_name=tk.Entry(self)
+        gv.entry_name=tk.Entry(self , textvariable = self.nameValue)  
         gv.entry_name.config(width=40)
         gv.entry_name.place(x=gv.xPosF,y=gv.yPos)
+        label_nameM =tk.Label(self,text="Max. ("+str(gv.mxNa)+" char.)", width=12,font=(gv.lbFont,gv.lbSize-2))
+        label_nameM.place(x=gv.xPosF+265,y=gv.yPos+1)
         gv.yPos+=30
-
-        #this creates 'Label' widget for Email.
+        label_room =tk.Label(self,text="Room", width=5,font=(gv.lbFont,gv.lbSize))
+        label_room.place(x=gv.xPosL,y=gv.yPos)
+        gv.entry_room=tk.Entry(self,textvariable = self.roomValue)
+        gv.entry_room.config(width=40)
+        gv.entry_room.place(x=gv.xPosF,y=gv.yPos)
+        label_roomM =tk.Label(self,text="Max. ("+str(gv.mxRo)+" char.)", width=12,font=(gv.lbFont,gv.lbSize-2))
+        label_roomM.place(x=gv.xPosF+265,y=gv.yPos+1)
+        gv.yPos+=30
+        label_Phone = tk.Label(self,text="Phone", width=5,font=(gv.lbFont,gv.lbSize))
+        label_Phone.place(x=gv.xPosL,y=gv.yPos)
+        gv.entry_phone1=tk.Entry(self, textvariable = self.ph1Value, validate='all',validatecommand=(gv.vcmd, '%P'))   
+        gv.entry_phone1.config(width=7)
+        gv.entry_phone1.place(x=gv.xPosF,y=gv.yPos)
+        label_dashP =tk.Label(self,text="-", width=1,font=(gv.lbFont,gv.lbSize))
+        label_dashP.place(x=gv.xPosF+46,y=gv.yPos-2)
+        gv.entry_phone2=tk.Entry(self, textvariable = self.ph2Value, validate='all',validatecommand=(gv.vcmd, '%P'))
+        gv.entry_phone2.config(width=10)
+        gv.entry_phone2.place(x=gv.xPosF+60,y=gv.yPos)
+        label_dashExt =tk.Label(self,text="ext", width=3,font=(gv.lbFont,gv.lbSize))
+        label_dashExt.place(x=gv.xPosF+128,y=gv.yPos-2)
+        gv.entry_ext=tk.Entry(self, textvariable = self.ph3Value, validate='all',validatecommand=(gv.vcmd, '%P'))
+        gv.entry_ext.config(width=5)
+        gv.entry_ext.place(x=gv.xPosF+160,y=gv.yPos)
+        label_phoneEx =tk.Label(self,text="p.e. (815-1717 ext 1245)", width=20,font=(gv.lbFont,gv.lbSize-2))
+        label_phoneEx.place(x=gv.xPosF+265,y=gv.yPos+1)
+        gv.yPos+=30
         label_email =tk.Label(self,text="Email", width=5,font=(gv.lbFont,gv.lbSize))
         label_email.place(x=gv.xPosL,y=gv.yPos)
-        gv.entry_email=tk.Entry(self)
+        gv.entry_email=tk.Entry(self, textvariable = self.emailValue)
         gv.entry_email.config(width=40)
         gv.entry_email.place(x=gv.xPosF,y=gv.yPos)
+        label_emailM =tk.Label(self,text="Max. ("+str(gv.mxEm)+" char.)", width=12,font=(gv.lbFont,gv.lbSize-2))
+        label_emailM.place(x=gv.xPosF+265,y=gv.yPos+1)
+        gv.yPos+=30
+        label_ContactH = tk.Label(self,text="Contact hour", width=10,font=(gv.lbFont,gv.lbSize))
+        label_ContactH.place(x=gv.xPosL,y=gv.yPos)
+        gv.entry_contHour=tk.Entry(self, textvariable = self.hourValue, validate='all',validatecommand=(gv.vcmd, '%P'))
+        gv.entry_contHour.config(width=10)
+        gv.entry_contHour.place(x=gv.xPosF,y=gv.yPos)
+        label_dash =tk.Label(self,text="::", width=1,font=(gv.lbFont,gv.lbSize))
+        label_dash.place(x=gv.xPosF+56,y=gv.yPos-2)
+        gv.entry_contMinute=tk.Entry(self, validate='all',validatecommand=(gv.vcmd, '%P'))
+        gv.entry_contMinute.config(width=10)
+        gv.entry_contMinute.place(x=gv.xPosF+70,y=gv.yPos)
         gv.yPos+=35
         self.segmentLine()
         gv.yPos+=30
 
     def endForm(self):
-        gv.state = False
+        gv.state = True
         self.ableControls(gv.state)
-        tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.update_document).place(x=gv.xPosF+70,y=gv.yPos)
+        tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.updateDocum).place(x=gv.xPosF+85,y=gv.yPos)
 #</editor-fold>
 
 #<editor-fold desc="Form Functions">
     def ableControls(self,state):
         if state:
             gv.trimester_cb['state'] = tk.NORMAL
-            gv.year_cb['state'] = tk.NORMAL  
+            gv.year_cb['state'] = tk.NORMAL
             gv.entry_name['state'] = tk.NORMAL
+            gv.entry_room['state'] = tk.NORMAL
+            gv.entry_phone1['state'] = tk.NORMAL
+            gv.entry_phone2['state'] = tk.NORMAL
+            gv.entry_ext['state'] = tk.NORMAL
             gv.entry_email['state'] = tk.NORMAL
+            gv.entry_contHour['state'] = tk.NORMAL
+            gv.entry_contMinute['state'] = tk.NORMAL
         else:
             gv.trimester_cb['state'] = tk.DISABLED
             gv.year_cb['state'] = tk.DISABLED
             gv.entry_name['state'] = tk.DISABLED
+            gv.entry_room['state'] = tk.DISABLED
+            gv.entry_phone1['state'] = tk.DISABLED
+            gv.entry_phone2['state'] = tk.DISABLED
+            gv.entry_ext['state'] = tk.DISABLED
             gv.entry_email['state'] = tk.DISABLED
+            gv.entry_contHour['state'] =  tk.DISABLED
+            gv.entry_contMinute['state'] =  tk.DISABLED
 
     def validateForm(self):
         try:
@@ -228,17 +312,82 @@ class Root(Tk):
                 messagebox.showinfo(title="INFORMATION", message='The Email is empty, please enter It!')
                 gv.entry_email.focus_set()
                 return False
+            elif self.check(gv.entry_email.get()) == False:
+                messagebox.showinfo(title="INFORMATION", message='The Email is badly formed, please correct It!')
+                gv.entry_email.focus_set()
+                return False
             else:
                 return True
         except Exception as ep:
             messagebox.showerror('Error: ', ep)
         return res
+
+    def clearControls(self):
+        gv.entry_name.delete(0,"end")
+        gv.entry_name.insert(0, '')
+        gv.entry_room.delete(0,"end")
+        gv.entry_room.insert(0, '')
+        gv.entry_phone1.delete(0,"end")
+        gv.entry_phone1.insert(0, '')
+        gv.entry_phone2.delete(0,"end")
+        gv.entry_phone2.insert(0, '')
+        gv.entry_ext.delete(0,"end")
+        gv.entry_ext.insert(0, '')
+        gv.entry_email.delete(0,"end")
+        gv.entry_email.insert(0, '')
+        gv.entry_contHour.delete(0,"end")
+        gv.entry_contHour.insert(0, '')
+        gv.entry_contMinute.delete(0,"end")
+        gv.entry_contMinute.insert(0, '')
+        gv.trimester_cb.current(0)
+        gv.year_cb.current(0)
+
+    def isNumeric(self, P):
+        if str.isdigit(P) or P == "":
+            return True
+        else:
+            return False
+
+    def check(self, email):
+        if(re.fullmatch(gv.emailRegex, email)):
+            print("Valid Email")
+            return True
+        else:
+            print("Invalid Email")
+            return False
+
+    def character_limit(self, value, limit):
+        value.set(value.get()[:limit])
+        if re.match(gv.textRegex,value.get()) is None:
+            value.set(value.get()[:-1])
+        return True
+
+    def check_hour(self, value, limit):
+        value.set(value.get()[:limit])
+        if re.match(r'^(0[0-9]|1[0-9]|2[0-3])$',value.get()) is None:
+            if len(value.get())==2:
+               value.set(value.get()[:-1])
+        # res= re.match(r'^(2[0-4]|1[0-9]|[1-9])$',value.get())
+        # print("Res= %s" % (res))
+
+        # res= re.match(r'^(0[0-9]|1[0-9]|2[0-3])$',value.get())
+        # print("Res= %s" % (res))
+        return True
+
+    def field_limit(self, value, limit):
+        value.set(value.get()[:limit])
+        return True
+
+    # def limitSizeDay(*args):
+    #     value = dayValue.get()
+    #     if len(value) > 2: dayValue.set(value[:2])
 #</editor-fold>
 
 
 
 if __name__ == '__main__':
-    root = Root()    
+    root = Root()
+    root.iconbitmap('img/icon.ico')
     logoImg = (Image.open("img/logo.jpg"))
     resizedImg = logoImg.resize((120,50), Image.ANTIALIAS)
     logoImg = ImageTk.PhotoImage(resizedImg)
