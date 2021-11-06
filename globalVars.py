@@ -79,4 +79,16 @@ textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
 alphanumRegex = r'^[A-Za-z0-9 ]*$'   #Validate the integrity of alphanumeric fields.
 hourRegex = r'^(0[0-9]|1[0-9]|2[0-3])$'
 minRegex = r'^[0-5][0-9]$'
+#Document MOD Variables ----------------------------------------------------------
+global CO_Doc
+
+# Course Descript Data:
+global firstColumn, programme, courseCode, courseTitle, nzqfLevel, credits, prerequisites, corequisites, restrictions, courseAims, learningOutcomes, avgLearning, sumAssessment
+
+fieldsTitles = ["+COURSE Code+", "+COURSE Title+", "+PREREQUISITES:+", "+CO-REQUISITES:+", "+RESTRICTIONS:+", "NZQF Level: +Copy from course descriptor+", 
+               "Credits: +Copy from course descriptor+", "The aim of the course is to:", "The learners will be able to: "]
+
+#Style property:
+heading_font_size: 18
+normal_font_size: 11
 #-------------------------------------------------------------------------
