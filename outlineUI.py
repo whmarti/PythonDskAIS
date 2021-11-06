@@ -8,7 +8,6 @@ from tkinter.filedialog import askopenfile,askdirectory
 from tkinter import *
 from tkinter.ttk import Progressbar,Button
 from PIL import ImageTk, Image
-#from tkinter.messagebox import showinfo
 from tkinter import ttk , messagebox
 import tkinter as tk,time, re #, pandas as pd
 import docx,shutil,os,globalVars as gv
@@ -16,10 +15,9 @@ import docx,shutil,os,globalVars as gv
 
 class Root(Tk):
     def __init__(self):
-        
         super(Root, self).__init__()
-        
         gv.vcmd = (self.register(self.isNumeric))
+        
         #Window mesures:
         self.title("Course Outline Generator")
         self.geometry('700x500')
@@ -39,17 +37,20 @@ class Root(Tk):
         self.emailValue = StringVar()
         self.emailValue.trace("w", lambda *args: self.character_limit(self.emailValue, gv.mxEm))
         self.roomValue = StringVar()
-        self.roomValue.trace("w", lambda *args: self.character_limit(self.roomValue, gv.mxRo))  
+        self.roomValue.trace("w", lambda *args: self.alphaNum_limit(self.roomValue, gv.mxRo))  
         self.hourValue = StringVar()
         self.hourValue.trace("w", lambda *args: self.check_hour(self.hourValue, 2))
+        self.minValue = StringVar()
+        self.minValue.trace("w", lambda *args: self.check_minute(self.minValue, 2))
+        self.empty=tk.StringVar()
 #<editor-fold desc="Logic Functions">
     def uploadFiles(self):
         if gv.fName != "":
             gv.lblFile.config(text=gv.fName)
             pb1 = Progressbar(
-                    root, 
-                    orient=HORIZONTAL, 
-                    length=300, 
+                    root,
+                    orient=HORIZONTAL,
+                    length=300,
                     mode='determinate'
                     )
             pb1.place(x=gv.xPosF+120,y=gv.yBtnPos)
@@ -58,8 +59,7 @@ class Root(Tk):
             for i in range(6):
                 root.update_idletasks()
                 pb1['value'] += 20
-                labelPorc.config(text=str(int(pb1['value'])-20) + "%")  
-                print(str(int(pb1['value'])-20))
+                labelPorc.config(text=str(int(pb1['value'])-20) + "%")
                 time.sleep(0.1)
             labelPorc.destroy()
             pb1.destroy()
@@ -67,18 +67,22 @@ class Root(Tk):
             try:
                 shutil.copy(gv.original, gv.target)
                 print("File copied successfully.")
+                gv.entry_name.focus_set()
                 messagebox.showinfo(title="INFORMATION", message='File Uploaded Successfully!')
             # If source and destination are same
             except shutil.SameFileError:
                 print("Source and destination represents the same file.")
+                messagebox.showinfo(title="Error:", message='Source and destination represents the same file.')
 
             # If there is any permission issue
             except PermissionError:
                 print("Permission denied.")
+                messagebox.showinfo(title="Error:", message='Permission denied.')
 
             # For other errors
-            except:
+            except Exception as ep:
                 print("Error occurred while copying file.")
+                messagebox.showerror(title="Error:", message='Error occurred while copying file.')
         else:
             messagebox.showerror(title="INFORMATION", message='Insert the File!')
 
@@ -86,10 +90,8 @@ class Root(Tk):
         file_path = askopenfile(mode='r', filetypes=[('Doc Files', '*docx')])
         if file_path is not None:
             gv.original=file_path.name
-            # print (gv.original)
             pos = gv.original.rfind("/")
             gv.fName=(gv.original[pos+1:len(gv.original)+1])
-            print (gv.fName)
             gv.fileSize = os.path.getsize(gv.original)
             print('Size del archivo: ' + str(gv.fileSize))
             if(int(gv.fileSize)<2097153):
@@ -108,14 +110,32 @@ class Root(Tk):
         w.place(y=gv.yPos,x=0)
         w.config( background=gv.bgSL)
 
-    def updateDocum(self):
-        valuesDocx = [gv.entry_name.get(), gv.entry_email.get()]
+    def update_click(self):
+        # self.upd_Docum_Docm()
+        self.upd_Docum_Frm()
+
+    def set_Final_Formval(self):
+      
+        gv.nameF = gv.entry_name.get().title()
+        gv.roomF = gv.entry_room.get().upper()
+        gv.phoneF = gv.entry_phone1.get() + "-" + gv.entry_phone2.get() + " ext. " +  gv.entry_ext.get()       
+        gv.hourF= gv.hourF="0"+gv.entry_contHour.get()  if len(gv.entry_contHour.get())==1 else gv.entry_contHour.get()
+        gv.hourF= gv.hourF+":0"+gv.entry_contMinute.get() if len(gv.entry_contMinute.get())==1 else gv.hourF+":"+gv.entry_contMinute.get()       
+        gv.hourF = gv.hourF+" AM" if gv.hourF[:1]=="0" else gv.hourF
+        gv.hourF = gv.hourF+" PM" if gv.hourF[:2]=="12" else gv.hourF
+
         print("Person: " + self.rbCoursePerson.get())
         print("Trimestre: %s\nYear: %s" % (gv.trimester_cb.get(), gv.year_cb.get()))
-        print("Name: %s\nEnail: %s" % (gv.entry_name.get(), gv.entry_email.get())) 
+        print("Name: %s\nEmail: %s" % (gv.nameF, gv.entry_email.get())) 
+        print("Room: %s\nPhone: %s" % (gv.roomF, gv.phoneF)) 
+        print("Hour: " + gv.hourF)
+
+    def upd_Docum_Frm(self):
+        res = self.validateForm()
+        self.set_Final_Formval()
+        valuesDocx = [gv.nameF, gv.roomF,gv.phoneF, gv.entry_email.get(),gv.hourF]
         flag=0
         fieldsCopied=0
-        res = self.validateForm()
         try:
             if res and len(gv.fName)>0:
                 document = docx.Document(gv.originalDoc)
@@ -127,21 +147,30 @@ class Root(Tk):
                             if gv.fieldsDocx[i] in par.text:
                                 if len(valuesDocx[i])>0:
                                     tmp_text = par.text
-                                    print(tmp_text)
-                                    tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
-                                    fieldsCopied+=1
-                                    par.text=tmp_text
-                                    print(tmp_text)
-                                    break
+                                    if "ext.#" in gv.fieldsDocx[i]:
+                                        if gv.entry_phone1.get()!="":
+                                            tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
+                                            fieldsCopied+=1
+                                            par.text=tmp_text
+                                            break
+                                    else:
+                                        tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
+                                        fieldsCopied+=1
+                                        par.text=tmp_text
+                                        break
                         if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
                 document.save('docs/'+gv.targetDoc)
                 dirname = askdirectory()
                 if dirname!='':
                     document.save(dirname+'/'+gv.targetDoc)
-                # self.clearControls()
-                    messagebox.showinfo(title="SUCCESS", message='File updated, Course descriptor loaded.')
+                    if self.empty.get()=="1":
+                       self.clearControls()
+                    messagebox.showinfo(title="Successful process", message='File updated, Course descriptor loaded.')
+                    gv.upld.focus_set()
+        except docx.opc.exceptions.PackageNotFoundError:
+            messagebox.showerror(title="Error:", message='The document docOrigin/TempleteCO.docx is not accesible. Please verify that it is in the folder.')
         except PermissionError:
-            messagebox.showinfo(title="INFORMATION", message='The document is not accesible. It can be open if so close it, please check.')
+            messagebox.showerror(title="Error:", message='The document is not accesible. It can be open if so close it, please check.')
 #</editor-fold>
 
 #<editor-fold desc="Constructors">
@@ -149,7 +178,7 @@ class Root(Tk):
         heading = tk.Label(self, text="Course Outline Generator")
         heading.config(font=(gv.tFont, gv.mtSize),fg=gv.stColor)
         heading.pack(padx=50, pady=65)
-        uplHeading = tk.Label(root, text="Upload Course Descriptor")
+        uplHeading = tk.Label(root, text="Course Descriptor")
         uplHeading.config(font=(gv.tFont, gv.stSize),fg=gv.stColor)
         uplHeading.place(x=gv.xPosL, y=gv.yPos)
         gv.yPos+=30
@@ -177,7 +206,6 @@ class Root(Tk):
         gv.trimester_cb.config(width=10)
         gv.trimester_cb.place(x=gv.xCbxLbl,y=gv.yPos)
         gv.xCbxLbl+=110
-
         label_year =tk.Label(root,text="Year", width=9,font=(gv.lbFont,gv.lbSize))
         label_year.place(x=gv.xCbxLbl,y=gv.yPos) 
         gv.xCbxLbl+=100
@@ -190,19 +218,18 @@ class Root(Tk):
         gv.yPos+=33
         self.segmentLine()
         gv.yPos+=20
-   
+
     def createLecturerInf(self):
         lectHeading = tk.Label(self, text="Lecturer Information")
         lectHeading.config(font=(gv.tFont, gv.stSize),fg=gv.stColor)
         lectHeading.place(x=gv.xPosL, y=gv.yPos)
         gv.yPos+=30
-        # gv.rbCoursePerson
         self.rb1=tk.Radiobutton(self,text="Lecturer",padx= 5, variable=self.rbCoursePerson, value="Lecturer").place(x=gv.xPosL,y=gv.yPos)
         self.rb2=tk.Radiobutton(self,text="Course Coordinator",padx= 20, variable=self.rbCoursePerson, value="Course Coordinator").place(x=gv.xPosF,y=gv.yPos)
         gv.yPos+=40
         label_name =tk.Label(self,text="Full Name", width=8,font=(gv.lbFont,gv.lbSize))
         label_name.place(x=gv.xPosL,y=gv.yPos)
-        gv.entry_name=tk.Entry(self , textvariable = self.nameValue)  
+        gv.entry_name=tk.Entry(self , textvariable = self.nameValue)
         gv.entry_name.config(width=40)
         gv.entry_name.place(x=gv.xPosF,y=gv.yPos)
         label_nameM =tk.Label(self,text="Max. ("+str(gv.mxNa)+" char.)", width=12,font=(gv.lbFont,gv.lbSize-2))
@@ -216,7 +243,7 @@ class Root(Tk):
         label_roomM =tk.Label(self,text="Max. ("+str(gv.mxRo)+" char.)", width=12,font=(gv.lbFont,gv.lbSize-2))
         label_roomM.place(x=gv.xPosF+265,y=gv.yPos+1)
         gv.yPos+=30
-        label_Phone = tk.Label(self,text="Phone", width=5,font=(gv.lbFont,gv.lbSize))
+        label_Phone = tk.Label(self,text="Phone (Opt.)", width=10,font=(gv.lbFont,gv.lbSize))
         label_Phone.place(x=gv.xPosL,y=gv.yPos)
         gv.entry_phone1=tk.Entry(self, textvariable = self.ph1Value, validate='all',validatecommand=(gv.vcmd, '%P'))   
         gv.entry_phone1.config(width=7)
@@ -249,17 +276,24 @@ class Root(Tk):
         gv.entry_contHour.place(x=gv.xPosF,y=gv.yPos)
         label_dash =tk.Label(self,text="::", width=1,font=(gv.lbFont,gv.lbSize))
         label_dash.place(x=gv.xPosF+56,y=gv.yPos-2)
-        gv.entry_contMinute=tk.Entry(self, validate='all',validatecommand=(gv.vcmd, '%P'))
+        gv.entry_contMinute=tk.Entry(self, textvariable = self.minValue, validate='all',validatecommand=(gv.vcmd, '%P'))
         gv.entry_contMinute.config(width=10)
         gv.entry_contMinute.place(x=gv.xPosF+70,y=gv.yPos)
+        label_hour =tk.Label(self,text="MM:HH p.e. 09:30 (AM) 15:45 (PM)", width=27,font=(gv.lbFont,gv.lbSize-2))
+        label_hour.place(x=gv.xPosF+265,y=gv.yPos+1)
         gv.yPos+=35
         self.segmentLine()
         gv.yPos+=30
 
     def endForm(self):
-        gv.state = True
+        gv.state = False
         self.ableControls(gv.state)
-        tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.updateDocum).place(x=gv.xPosF+85,y=gv.yPos)
+        tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.update_click).place(x=gv.xPosF+70,y=gv.yPos)
+        gv.empty_ch=tk.Checkbutton(self, text='Empty the form',variable=self.empty, onvalue="1", offvalue="0" )
+        gv.empty_ch.select()
+        gv.empty_ch.place(x=gv.xPosF+310,y=gv.yPos)
+        gv.upld.focus_set()
+
 #</editor-fold>
 
 #<editor-fold desc="Form Functions">
@@ -293,33 +327,59 @@ class Root(Tk):
             style.configure("TCombobox", fieldbackground="yellow")
             res = False
             if gv.fName == "":
-                messagebox.showerror(title="INFORMATION", message='The File was not chosen, please choose the Course Descriptor!')
+                messagebox.showinfo(title="INFORMATION", message='The File was not chosen, please choose the Course Descriptor!')
+                self.ableControls(False)
                 gv.trimester_cb.focus_set()
                 return False
-            elif gv.trimester_cb.get()=='Select >':
-                # gv.trimester_cb.config(fg = 'blue')
-                messagebox.showerror(title="INFORMATION", message='The Trimester was not chosen, choose the Trimester!')
+            if gv.trimester_cb.get()=='Select >':
+                messagebox.showinfo(title="INFORMATION", message='The Trimester was not chosen, choose the Trimester!')
                 gv.trimester_cb.focus_set()
                 return False
-            elif gv.year_cb.get()=='Select >':
+            if gv.year_cb.get()=='Select >':
                 messagebox.showinfo(title="INFORMATION", message='The Year was not chosen, choose the Year!')
                 gv.year_cb.focus_set()
-            elif len(gv.entry_name.get().strip()) == 0:
+                return False
+            if len(gv.entry_name.get().strip()) == 0:
                 messagebox.showinfo(title="INFORMATION", message='The Full name is empty, please enter It!')
                 gv.entry_name.focus_set()
                 return False
-            elif len(gv.entry_email.get().strip()) == 0:
+            if len(gv.entry_room.get().strip()) == 0:
+                messagebox.showinfo(title="INFORMATION", message='The Room is empty, please enter It!')
+                gv.entry_room.focus_set()
+                return False
+            if len(gv.entry_phone1.get().strip()) > 0 or len(gv.entry_phone2.get().strip()) > 0 or len(gv.entry_ext.get().strip()) > 0:
+                if len(gv.entry_phone1.get().strip()) == 0:
+                    messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
+                    gv.entry_phone1.focus_set()
+                    return False
+                elif len(gv.entry_phone2.get().strip()) == 0:
+                    messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
+                    gv.entry_phone2.focus_set()
+                    return False
+                elif len(gv.entry_ext.get().strip()) == 0:
+                    messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
+                    gv.entry_ext.focus_set()
+                    return False
+            if len(gv.entry_email.get().strip()) == 0:
                 messagebox.showinfo(title="INFORMATION", message='The Email is empty, please enter It!')
                 gv.entry_email.focus_set()
                 return False
-            elif self.check(gv.entry_email.get()) == False:
+            if self.check(gv.entry_email.get()) == False:
                 messagebox.showinfo(title="INFORMATION", message='The Email is badly formed, please correct It!')
                 gv.entry_email.focus_set()
+                return False
+            if len(gv.entry_contHour.get().strip()) == 0:
+                messagebox.showinfo(title="INFORMATION", message='The Hour is incomplete, please enter It!')
+                gv.entry_contHour.focus_set()
+                return False
+            if len(gv.entry_contMinute.get().strip()) == 0:
+                messagebox.showinfo(title="INFORMATION", message='The Hour is incomplete, please enter It!')
+                gv.entry_contMinute.focus_set()
                 return False
             else:
                 return True
         except Exception as ep:
-            messagebox.showerror('Error: ', ep)
+            messagebox.showerror("Error:", ep)
         return res
 
     def clearControls(self):
@@ -339,8 +399,8 @@ class Root(Tk):
         gv.entry_contHour.insert(0, '')
         gv.entry_contMinute.delete(0,"end")
         gv.entry_contMinute.insert(0, '')
-        gv.trimester_cb.current(0)
-        gv.year_cb.current(0)
+        gv.trimester_cb.current(1)
+        gv.year_cb.current(1)
 
     def isNumeric(self, P):
         if str.isdigit(P) or P == "":
@@ -350,10 +410,8 @@ class Root(Tk):
 
     def check(self, email):
         if(re.fullmatch(gv.emailRegex, email)):
-            print("Valid Email")
             return True
         else:
-            print("Invalid Email")
             return False
 
     def character_limit(self, value, limit):
@@ -362,25 +420,34 @@ class Root(Tk):
             value.set(value.get()[:-1])
         return True
 
+    def alphaNum_limit(self, value, limit):
+        value.set(value.get()[:limit])
+        if re.match(gv.alphanumRegex,value.get()) is None:
+            value.set(value.get()[:-1])
+        return True
+
     def check_hour(self, value, limit):
         value.set(value.get()[:limit])
-        if re.match(r'^(0[0-9]|1[0-9]|2[0-3])$',value.get()) is None:
+        if re.match(gv.hourRegex,value.get()) is None:
             if len(value.get())==2:
                value.set(value.get()[:-1])
-        # res= re.match(r'^(2[0-4]|1[0-9]|[1-9])$',value.get())
-        # print("Res= %s" % (res))
+        return True
 
-        # res= re.match(r'^(0[0-9]|1[0-9]|2[0-3])$',value.get())
-        # print("Res= %s" % (res))
+    def check_minute(self, value, limit):
+        value.set(value.get()[:limit])
+        if re.match(gv.minRegex,value.get()) is None:
+            if len(value.get())==2:
+               value.set(value.get()[:-1])
         return True
 
     def field_limit(self, value, limit):
         value.set(value.get()[:limit])
         return True
 
-    # def limitSizeDay(*args):
-    #     value = dayValue.get()
-    #     if len(value) > 2: dayValue.set(value[:2])
+    def funcEnter(self,event):
+        if self.focus_get() == gv.upld:
+            self.open_file()
+
 #</editor-fold>
 
 
@@ -392,6 +459,7 @@ if __name__ == '__main__':
     resizedImg = logoImg.resize((120,50), Image.ANTIALIAS)
     logoImg = ImageTk.PhotoImage(resizedImg)
     label = tk.Label(root, image=logoImg).place(x=280, y=10)
+    root.bind('<Return>', root.funcEnter)
 
    #Built of UI:
     root.createHeader()

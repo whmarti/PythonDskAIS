@@ -25,7 +25,6 @@ yBtnPos=110  #Button Upload
 
 
 #Comboboxes:
-# ycbxPos=120  selected_month = tk.StringVar()
 xCbxLbl=120
 lblFile = ''    #File name
 #-------------------------------------------------------------------------
@@ -51,15 +50,19 @@ state = FALSE
 # Controls:
 years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
-fieldsDocx = ["+Lecturer Name+","+E-mail address+"]
-
+fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#   ++Delete if adjunct++","+E-mail address+","+Contact time for this course+"]
+# Final values:
+nameF = ''
+roomF = ''
+phoneF = ''
+hourF = ''
 #-------------------------------------------------------------------------
 
 #Form Variables ----------------------------------------------------------
 
 # Controls:
 global upld
-global trimester_cb, year_cb
+global trimester_cb, year_cb , empty_ch
 rbCoursePerson=''
 global entry_name, entry_room, entry_phone1, entry_phone2, entry_ext, entry_email, entry_contHour, entry_contMinute
 #Max. fields length:
@@ -69,8 +72,11 @@ mxph1=4
 mxph2=10
 mxph3=4
 mxEm=70
-# Logic:
+# Validation Logic:
 global vcmd   #Validate the integrity of the value.
 emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'   #Validate the integrity of the email.
 textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
+alphanumRegex = r'^[A-Za-z0-9 ]*$'   #Validate the integrity of alphanumeric fields.
+hourRegex = r'^(0[0-9]|1[0-9]|2[0-3])$'
+minRegex = r'^[0-5][0-9]$'
 #-------------------------------------------------------------------------
