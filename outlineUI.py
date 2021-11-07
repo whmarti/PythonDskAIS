@@ -641,12 +641,12 @@ class Root(Tk):
                             for lo in gv.learningOutcomes:
                                 if "+Copy" in values[index + 1].text and index < length:
                                     values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)         
-                                    index = index + 1
                                 elif index < length: 
                                     values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)
                                     #num_pr = values[index]._p.pPr.numPr
                                     #if num_pr is not None:
                                     #   print(num_pr.value)  
+                                index = index + 1
                         else: 
                             tmp_text = tmp_text.replace(gv.fieldsTitles[i], valuesFromCD[i])   
                             par.text=tmp_text
