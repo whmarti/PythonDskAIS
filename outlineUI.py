@@ -145,17 +145,18 @@ class Root(Tk):
                     if flag==1:
                         for i in range(len(gv.fieldsDocx)):
                             if gv.fieldsDocx[i] in par.text:
+                                fieldsCopied+=1
                                 if len(valuesDocx[i])>0:
                                     tmp_text = par.text
                                     if "ext.#" in gv.fieldsDocx[i]:
                                         if gv.entry_phone1.get()!="":
                                             tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
-                                            fieldsCopied+=1
+                                            # fieldsCopied+=1
                                             par.text=tmp_text
                                             break
                                     else:
                                         tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
-                                        fieldsCopied+=1
+                                        # fieldsCopied+=1
                                         par.text=tmp_text
                                         break
                         if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
@@ -286,7 +287,7 @@ class Root(Tk):
         gv.yPos+=30
 
     def endForm(self):
-        gv.state = False
+        #gv.state = False
         self.ableControls(gv.state)
         tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.update_click).place(x=gv.xPosF+70,y=gv.yPos)
         gv.empty_ch=tk.Checkbutton(self, text='Empty the form',variable=self.empty, onvalue="1", offvalue="0" )
