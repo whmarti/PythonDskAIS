@@ -549,12 +549,13 @@ class Root(Tk):
         for row in range(len(SummativeAssTbl.rows)):
             if row >= 1 and row <=4:
                 for cell in range(len(SummativeAssTbl.rows[row].cells)):
-                    if cell == 0:
-                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 0]
-                    elif cell == 1:
-                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 1]
-                    elif cell == 4:
-                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 2]
+                    if gv.sumAssessment.shape[0] >= row:
+                        if cell == 0:
+                            SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 0]
+                        elif cell == 1:
+                            SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 1]
+                        elif cell == 4:
+                            SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 2]
 
     def replaceInfo(self): 
         values = gv.CO_Doc.paragraphs
