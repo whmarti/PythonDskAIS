@@ -4,13 +4,17 @@
 # Developers: William Martin, June , Sun....
 # Date of creation 03/11/2021
 #*************************************************************************
-from tkinter.filedialog import askopenfile,askdirectory
+from tkinter.filedialog import askopenfile,askdirectory,asksaveasfile
 from tkinter import *
 from tkinter.ttk import Progressbar,Button
 from PIL import ImageTk, Image
 from tkinter import ttk , messagebox
 import tkinter as tk,time, re #, pandas as pd
 import docx,shutil,os,globalVars as gv
+import pandas as pd
+from docx.shared import RGBColor, Pt
+from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 
 class Root(Tk):
@@ -111,7 +115,7 @@ class Root(Tk):
         w.config( background=gv.bgSL)
 
     def update_click(self):
-        # self.upd_Docum_Docm()
+        self.upd_Docum_Docm()
         self.upd_Docum_Frm()
 
     def set_Final_Formval(self):
@@ -138,7 +142,9 @@ class Root(Tk):
         fieldsCopied=0
         try:
             if res and len(gv.fName)>0:
-                document = docx.Document(gv.originalDoc)
+                #document = docx.Document(gv.originalDoc)
+                #Jess changed here 07/11
+                document = gv.CO_Doc
                 for par in document.paragraphs:  # to extract the whole text
                     if self.rbCoursePerson.get()+":" in par.text:
                         flag=1
@@ -160,13 +166,24 @@ class Root(Tk):
                                         break
                         if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
                 document.save('docs/'+gv.targetDoc)
-                dirname = askdirectory()
-                if dirname!='':
-                    document.save(dirname+'/'+gv.targetDoc)
+                # dirname = askdirectory()
+                # if dirname!='':
+                #     document.save(dirname+'/'+gv.targetDoc)
+                #     if self.empty.get()=="1":
+                #        self.clearControls()
+                #     messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
+                #     gv.upld.focus_set()
+                
+                #Jess changed here 07/11
+                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile="TempleteCO.docx")
+                if file_path is not None:
+                    gv.original=file_path.name
+                    gv.state = True
+                    gv.CO_Doc.save(gv.original)
                     if self.empty.get()=="1":
-                       self.clearControls()
-                    messagebox.showinfo(title="Successful process", message='File updated, Course descriptor loaded.')
-                    gv.upld.focus_set()
+                        self.clearControls()
+                    messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
+
         except docx.opc.exceptions.PackageNotFoundError:
             messagebox.showerror(title="Error:", message='The document docOrigin/TempleteCO.docx is not accesible. Please verify that it is in the folder.')
         except PermissionError:
@@ -274,7 +291,7 @@ class Root(Tk):
         gv.entry_contHour=tk.Entry(self, textvariable = self.hourValue, validate='all',validatecommand=(gv.vcmd, '%P'))
         gv.entry_contHour.config(width=10)
         gv.entry_contHour.place(x=gv.xPosF,y=gv.yPos)
-        label_dash =tk.Label(self,text="::", width=1,font=(gv.lbFont,gv.lbSize))
+        label_dash =tk.Label(self,text=":", width=1,font=(gv.lbFont,gv.lbSize))
         label_dash.place(x=gv.xPosF+56,y=gv.yPos-2)
         gv.entry_contMinute=tk.Entry(self, textvariable = self.minValue, validate='all',validatecommand=(gv.vcmd, '%P'))
         gv.entry_contMinute.config(width=10)
@@ -289,7 +306,7 @@ class Root(Tk):
         gv.state = False
         self.ableControls(gv.state)
         tk.Button(self, text='Download a Course Outline' , width=30,bg="green",fg='white',activebackground='#0052cc', activeforeground='#aaffaa', command=self.update_click).place(x=gv.xPosF+70,y=gv.yPos)
-        gv.empty_ch=tk.Checkbutton(self, text='Empty the form',variable=self.empty, onvalue="1", offvalue="0" )
+        gv.empty_ch=tk.Checkbutton(self, text='Empty the form after download',variable=self.empty, onvalue="1", offvalue="0" )
         gv.empty_ch.select()
         gv.empty_ch.place(x=gv.xPosF+310,y=gv.yPos)
         gv.upld.focus_set()
@@ -450,7 +467,198 @@ class Root(Tk):
 
 #</editor-fold>
 
+#<editor-fold desc="Document Functions">
+    
+    def upd_Docum_Docm(self): 
+        
+        #gv.CO_Doc = docx.Document('docs/TempleteCO.docx')
+        gv.CO_Doc = docx.Document(gv.originalDoc)
 
+        #inputDoc = docx.Document('docs/'+gv.fName)
+        inputDoc = docx.Document(gv.original)
+        print(gv.original)
+
+        def read_docx_table(doc, table_num=1, nhader=1):
+            table = doc.tables[table_num-1]
+            data = [[cell.text for cell in row.cells] for row in table.rows]
+        
+            df = pd.DataFrame(data)
+
+            if nhader == 1 :
+                df = df.rename(columns=df.iloc[0]).drop(df.index[0]).reset_index(drop=True)
+
+            return df
+
+        df = read_docx_table(inputDoc,1,0)
+    
+        #Get the first Column
+        gv.firstColumn = pd.Series(df[:][0], name="s")
+        #Programme
+        gv.programme = df[gv.firstColumn.isin(['Programme']) == True].iloc[0, 1]
+        #Course Code
+        gv.courseCode = df[gv.firstColumn.isin(['Course Code']) == True].iloc[0, 1]
+        #Course Title
+        gv.courseTitle = df[gv.firstColumn.isin(['Course Title']) == True].iloc[0, 1]
+        #NZQF Level
+        gv.nzqfLevel = df[gv.firstColumn.isin(['NZQF Level']) == True].iloc[0, 1]
+        #Credits
+        gv.credits = df[gv.firstColumn.isin(['Credits']) == True].iloc[0, 1]
+        #Prerequisites
+        gv.prerequisites = df[gv.firstColumn.isin(['Prerequisites']) == True].iloc[0, 1]
+        # #Co-requisites
+        gv.corequisites = df[gv.firstColumn.isin(['Co-requisites']) == True].iloc[0, 1]
+        # #Restrictions
+        gv.restrictions = df[gv.firstColumn.isin(['Restrictions']) == True].iloc[0, 1]
+        #Course Aims
+        gv.courseAims = df[gv.firstColumn.isin(['Course Aims']) == True].iloc[0, 1]
+        #Get rows out of 'lo' series starts its second row because the first low is 'The learners will be able to:'
+        gv.learningOutcomes = df[gv.firstColumn.str.contains('Learning\nOutcomes')].iloc[1:, 2]
+        #Average Learning
+        gv.avgLearning = df[gv.firstColumn.str.contains('Average')].iloc[:, [1,3,4,5]]
+        #Summative Assessment 
+        gv.sumAssessment = df[gv.firstColumn.str.contains('Summative')].iloc[1:, [1,4,5]]  
+
+        root.changeHeader()
+        root.copySumAssesment()
+        root.replaceInfo()
+        
+    def changeHeader(self):
+        section = gv.CO_Doc.sections[0]
+        header = section.header
+        headerTitle = header.paragraphs[0]
+        headerTitle.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        headerTitle.text = gv.courseCode + "\t\tTrimester " + gv.trimester_cb.get() + ", " + gv.year_cb.get()
+        headerStyle = gv.CO_Doc.styles['Header']
+        headerFont = headerStyle.font
+        headerFont.name = gv.tFont
+        headerFont.size = Pt(12)
+        headerFont.color.rgb = RGBColor(0,0,0)
+        headerTitle.style = headerStyle
+
+    def copySumAssesment(self) : 
+        # for row in range(sumAssessment.shape[0]):
+        #     for cell in range(sumAssessment.shape[1]):
+        #         print(sumAssessment.iloc[row,cell])
+
+        SummativeAssTbl = gv.CO_Doc.tables[3]
+        # for row in table.rows:
+        #     for cell in row.cells:
+        #         print(cell.text) 
+        
+        for row in range(len(SummativeAssTbl.rows)):
+            if row >= 1 and row <=4:
+                for cell in range(len(SummativeAssTbl.rows[row].cells)):
+                    if cell == 0:
+                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 0]
+                    elif cell == 1:
+                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 1]
+                    elif cell == 4:
+                        SummativeAssTbl.rows[row].cells[cell].text = gv.sumAssessment.iloc[row-1, 2]
+
+    def replaceInfo(self): 
+        values = gv.CO_Doc.paragraphs
+        #values = docx.Document(gv.originalDoc).paragraphs
+        next_ = afterNext = None
+        cnt = 0
+        length = len(values) 
+        valuesFromCD = [gv.courseCode, gv.courseTitle, gv.prerequisites, gv.corequisites, gv.restrictions, gv.nzqfLevel, gv.credits, gv.courseAims, gv.learningOutcomes]
+        
+        def setStyle(style_type, targetStyle) : 
+            font = targetStyle.font
+            font.name = gv.tFont
+            if style_type == "Heading 1":
+                targetStyle.base_style = styles['Heading 1']
+                font.size = Pt(18)
+                font.color.rgb = RGBColor(255,255,255)
+            
+            elif style_type == "Normal_Bold":
+                targetStyle.base_style = styles['Normal']
+                font.size = Pt(11)
+                font.bold = True
+                font.color.rgb = RGBColor(0,0,0)
+
+            elif style_type == "Normal":
+                targetStyle.base_style = styles['Normal']
+                font.size = Pt(11)
+                font.color.rgb = RGBColor(0,0,0)
+            
+            font.italic = False
+            return targetStyle 
+
+        for index, par in enumerate(values): # to extract the whole text
+            for i in range(len(gv.fieldsTitles)):
+                if gv.fieldsTitles[i] in par.text:
+                    styles = gv.CO_Doc.styles
+                    if par.text == "+COURSE Code+" :
+                        heading_style = styles.add_style('New Heading'+str(index), WD_STYLE_TYPE.PARAGRAPH)    
+                        par.style = setStyle("Heading 1", heading_style)
+                    elif par.text == "+COURSE Title+" :
+                        heading_style = styles.add_style('New Heading'+str(index), WD_STYLE_TYPE.PARAGRAPH)
+                        par.style = setStyle("Heading 1", heading_style)
+                    elif "PREREQUISITES" in par.text or "CO-REQUISITES" in par.text or "RESTRICTIONS" in par.text:
+                            if index < (length - 2):
+                                next_ = values[index + 1]
+                                afterNext = values[index + 2]
+                            normal = styles.add_style('normal'+ str(index), WD_STYLE_TYPE.PARAGRAPH)
+                            par.style = setStyle("Normal_Bold", normal)
+                    elif "The aim of the course is to:" in par.text: 
+                            if index < (length - 1):
+                                next_ = values[index + 1]
+                                normal = styles['Normal'] #Make Entire Normal Style same
+                                par.style = next_.style = setStyle("Normal", normal)
+                    #elif "The learners will be able to: " in par.text:
+                            # while "+Copy" in values[index + 1].text and index < length: 
+                            #     values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, "") 
+                            #     #lo = values[index + 1]
+                            #     index = index + 1
+                            #     cnt = cnt + 1
+                            #     #lo.text = lo.text.replace(lo.text, "")
+                            #     print(values[index + 1].text)
+                            #     print(valuesDocx[i])
+                    elif "NZQF" in par.text or "Credits":
+                        normal = styles.add_style('normal'+ str(index), WD_STYLE_TYPE.PARAGRAPH)
+                        par.style = setStyle("Normal_Bold", normal)         
+                            
+                    #Replace information
+                    if len(valuesFromCD[i])>0:
+                        tmp_text = par.text
+                        #print(tmp_text)
+                        if "PREREQUISITES" in tmp_text or "CO-REQUISITES" in tmp_text or "RESTRICTIONS" in tmp_text:
+                            #eliminate + + and get rid of next two lines and replace it as valueDocx[i]
+                            tmp_text = gv.fieldsTitles[i].replace("+","").strip()
+                            next_.text = next_.text.replace(next_.text, valuesFromCD[i])
+                            afterNext.text = afterNext.text.replace(afterNext.text, "")
+
+                        if "NZQF" in tmp_text or "Credits" in tmp_text: 
+                            result = tmp_text.split(':')
+                            value = result[0] + ": " + valuesFromCD[i]
+                            tmp_text = tmp_text.replace(gv.fieldsTitles[i], value) 
+                            par.text=tmp_text
+                        if "The aim of" in tmp_text :
+                            next_.text = next_.text.replace(next_.text, valuesFromCD[i])
+                            break
+                        if "The learners" in tmp_text :
+                            for lo in gv.learningOutcomes:
+                                if "+Copy" in values[index + 1].text and index < length:
+                                    values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)         
+                                    index = index + 1
+                                elif index < length: 
+                                    gv.CO_Doc.add_paragraph(lo)
+                                    values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)
+                                    #num_pr = values[index]._p.pPr.numPr
+                                    #if num_pr is not None:
+                                    #   print(num_pr.value)  
+                                    index = index + 1
+                        else: 
+                            tmp_text = tmp_text.replace(gv.fieldsTitles[i], valuesFromCD[i])   
+                            par.text=tmp_text
+                        #print(tmp_text)
+                        break  
+
+    
+
+    
+#</editor-fold>
 
 if __name__ == '__main__':
     root = Root()
