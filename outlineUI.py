@@ -177,9 +177,9 @@ class Root(Tk):
                 #Jess changed here 07/11
                 file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile="TempleteCO.docx")
                 if file_path is not None:
-                    gv.original=file_path.name
+                    gv.originalDoc=file_path.name
                     gv.state = True
-                    gv.CO_Doc.save(gv.original)
+                    gv.CO_Doc.save(gv.originalDoc)
                     if self.empty.get()=="1":
                         self.clearControls()
                     messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
@@ -373,10 +373,10 @@ class Root(Tk):
                     messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
                     gv.entry_phone2.focus_set()
                     return False
-                elif len(gv.entry_ext.get().strip()) == 0:
-                    messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
-                    gv.entry_ext.focus_set()
-                    return False
+                # elif len(gv.entry_ext.get().strip()) == 0:
+                #     messagebox.showinfo(title="INFORMATION", message='The Phone is incomplete, please enter It!')
+                #     gv.entry_ext.focus_set()
+                #     return False
             if len(gv.entry_email.get().strip()) == 0:
                 messagebox.showinfo(title="INFORMATION", message='The Email is empty, please enter It!')
                 gv.entry_email.focus_set()
@@ -616,8 +616,7 @@ class Root(Tk):
                             #     print(values[index + 1].text)
                             #     print(valuesDocx[i])
                     elif "NZQF" in par.text or "Credits":
-                        normal = styles.add_style('normal'+ str(index), WD_STYLE_TYPE.PARAGRAPH)
-                        par.style = setStyle("Normal_Bold", normal)         
+                        par.style = setStyle("Normal", normal)         
                             
                     #Replace information
                     if len(valuesFromCD[i])>0:
@@ -637,7 +636,7 @@ class Root(Tk):
                         if "The aim of" in tmp_text :
                             next_.text = next_.text.replace(next_.text, valuesFromCD[i])
                             break
-                        if "The learners" in tmp_text :
+                        if "The learners will be able to:" in tmp_text :
                             for lo in gv.learningOutcomes:
                                 if "+Copy" in values[index + 1].text and index < length:
                                     values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)         
@@ -649,15 +648,13 @@ class Root(Tk):
                                     #if num_pr is not None:
                                     #   print(num_pr.value)  
                                     index = index + 1
+                                    
                         else: 
                             tmp_text = tmp_text.replace(gv.fieldsTitles[i], valuesFromCD[i])   
                             par.text=tmp_text
                         #print(tmp_text)
                         break  
 
-    
-
-    
 #</editor-fold>
 
 if __name__ == '__main__':
