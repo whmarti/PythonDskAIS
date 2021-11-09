@@ -472,10 +472,8 @@ class Root(Tk):
     
     def upd_Docum_Docm(self): 
         
-        #gv.CO_Doc = docx.Document('docs/TempleteCO.docx')
         gv.CO_Doc = docx.Document(gv.originalDoc)
 
-        #inputDoc = docx.Document('docs/'+gv.fName)
         inputDoc = docx.Document(gv.original)
         print(gv.original)
 
@@ -542,9 +540,6 @@ class Root(Tk):
         #         print(sumAssessment.iloc[row,cell])
 
         SummativeAssTbl = gv.CO_Doc.tables[3]
-        # for row in table.rows:
-        #     for cell in row.cells:
-        #         print(cell.text) 
         
         for row in range(len(SummativeAssTbl.rows)):
             if row >= 1 and row <=4:
@@ -608,22 +603,13 @@ class Root(Tk):
                                 next_ = values[index + 1]
                                 normal = styles['Normal'] #Make Entire Normal Style same
                                 par.style = next_.style = setStyle("Normal", normal)
-                    #elif "The learners will be able to: " in par.text:
-                            # while "+Copy" in values[index + 1].text and index < length: 
-                            #     values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, "") 
-                            #     #lo = values[index + 1]
-                            #     index = index + 1
-                            #     cnt = cnt + 1
-                            #     #lo.text = lo.text.replace(lo.text, "")
-                            #     print(values[index + 1].text)
-                            #     print(valuesDocx[i])
                     elif "NZQF" in par.text or "Credits":
-                        par.style = setStyle("Normal", normal)         
-                            
+                        par.style = setStyle("Normal", normal) 
+
                     #Replace information
                     if len(valuesFromCD[i])>0:
                         tmp_text = par.text
-                        #print(tmp_text)
+
                         if "PREREQUISITES" in tmp_text or "CO-REQUISITES" in tmp_text or "RESTRICTIONS" in tmp_text:
                             #eliminate + + and get rid of next two lines and replace it as valueDocx[i]
                             tmp_text = gv.fieldsTitles[i].replace("+","").strip()
@@ -639,20 +625,32 @@ class Root(Tk):
                             next_.text = next_.text.replace(next_.text, valuesFromCD[i])
                             break
                         if "The learners will be able to:" in tmp_text :
+                            autoNum = 1
                             for lo in gv.learningOutcomes:
                                 if "+Copy" in values[index + 1].text and index < length:
-                                    values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)         
-                                elif index < length: 
-                                    values[index + 1].text = values[index + 1].text.replace(values[index + 1].text, lo)
-                                    #num_pr = values[index]._p.pPr.numPr
-                                    #if num_pr is not None:
-                                    #   print(num_pr.value)  
+                                    values[index+1].insert_paragraph_before(str(autoNum) + ".  " + lo)
+                                elif index < length:
+                                    values[index+1].insert_paragraph_before(str(autoNum) + ".  " + lo)
+                                delete_paragraph(values[index+1])
                                 index = index + 1
+                                autoNum = autoNum + 1
                         else: 
                             tmp_text = tmp_text.replace(gv.fieldsTitles[i], valuesFromCD[i])   
                             par.text=tmp_text
-                        #print(tmp_text)
-                        break  
+                        break
+
+            #Remove comments start with "++"
+            if "++" in par.text : 
+                if "Delete" in par.text: 
+                    strIndex = par.text.find("++")
+                    par.text = par.text.replace(par.text[strIndex:], "")
+                else:
+                    par.text = par.text.replace(par.text, "")\
+            
+            def delete_paragraph(paragraph):
+                p = paragraph._element
+                p.getparent().remove(p)
+                p._p = p._element = None 
 
 #</editor-fold>
 
