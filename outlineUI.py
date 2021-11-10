@@ -175,12 +175,14 @@ class Root(Tk):
                 #     messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
                 #     gv.upld.focus_set()
                 
-                #Jess changed here 07/11
-                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile="TempleteCO.docx")
+                #Kim changed filename format on 11/11 (Need to add Initial of User Name later)
+                file_name = gv.courseCode + "-T" + gv.trimester_cb.get() + "-" + gv.year_cb.get() + "-CourseOutline-Draft1-" + ".docx"
+                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile=file_name)
                 if file_path is not None:
-                    gv.originalDoc=file_path.name
+                    #gv.originalDoc=file_path.name
                     gv.state = True
-                    gv.CO_Doc.save(gv.originalDoc)
+                    #gv.CO_Doc.save(gv.originalDoc)
+                    gv.CO_Doc.save(file_path.name)
                     if self.empty.get()=="1":
                         self.clearControls()
                     messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
@@ -556,7 +558,7 @@ class Root(Tk):
         values = gv.CO_Doc.paragraphs
         #values = docx.Document(gv.originalDoc).paragraphs
         next_ = afterNext = None
-        cnt = 0
+        isCourseDuration = False
         length = len(values) 
         valuesFromCD = [gv.courseCode, gv.courseTitle, gv.prerequisites, gv.corequisites, gv.restrictions, gv.nzqfLevel, gv.credits, gv.courseAims, gv.learningOutcomes]
         
@@ -627,30 +629,38 @@ class Root(Tk):
                         if "The learners will be able to:" in tmp_text :
                             autoNum = 1
                             for lo in gv.learningOutcomes:
-                                if "+Copy" in values[index + 1].text and index < length:
-                                    values[index+1].insert_paragraph_before(str(autoNum) + ".  " + lo)
-                                elif index < length:
-                                    values[index+1].insert_paragraph_before(str(autoNum) + ".  " + lo)
+                                
+                                values[index+1].insert_paragraph_before(str(autoNum) + ".  " + lo)
                                 delete_paragraph(values[index+1])
                                 index = index + 1
                                 autoNum = autoNum + 1
+                        
                         else: 
                             tmp_text = tmp_text.replace(gv.fieldsTitles[i], valuesFromCD[i])   
                             par.text=tmp_text
                         break
 
-            #Remove comments start with "++"
-            if "++" in par.text : 
+            if "Course DURATION" in par.text: 
+                isCourseDuration = True
+
+            #Remove comments start with "++" before Course Duration part
+            if "++" in par.text and isCourseDuration == False : 
                 if "Delete" in par.text: 
                     strIndex = par.text.find("++")
                     par.text = par.text.replace(par.text[strIndex:], "")
                 else:
-                    par.text = par.text.replace(par.text, "")\
+                    delete_paragraph(par)
+            
+            if "Course Coordinator" in par.text:
+                if self.rbCoursePerson.get() != "Course Coordinator":
+                    for i in range(6):
+                        delete_paragraph(values[index+i])
             
             def delete_paragraph(paragraph):
                 p = paragraph._element
-                p.getparent().remove(p)
-                p._p = p._element = None 
+                if p.getparent() != None: 
+                    p.getparent().remove(p)
+                    p._p = p._element = None 
 
 #</editor-fold>
 
