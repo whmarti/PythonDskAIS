@@ -51,7 +51,7 @@ state = FALSE
 # Controls:
 years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
-fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.# ++Delete if adjunct++","+E-mail address+","+Contact time for this course+"]
+fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#","+E-mail address+","+Contact time for this course+"]
 # Final values:
 nameF = ''
 roomF = ''
@@ -75,7 +75,7 @@ mxph3=4
 mxEm=70
 # Validation Logic:
 global vcmd   #Validate the integrity of the value.
-nameRegex = r'^[A-Z][a-z]{2,}(\s[A-Z][a-zA-Z]{2,}){1,}$'   #Validate the integrity of the name.
+nameRegex = r'^[A-Z][a-z]{2,}(\s[A-Z][a-zA-Z]{1,}){1,}$'   #Validate the integrity of the name.
 emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'   #Validate the integrity of the email.
 textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
 alphanumRegex = r'^[A-Za-z0-9 ]*$'   #Validate the integrity of alphanumeric fields.
