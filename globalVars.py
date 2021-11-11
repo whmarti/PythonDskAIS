@@ -51,7 +51,7 @@ state = FALSE
 # Controls:
 years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
-fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#","+E-mail address+","+Contact time for this course+"]
+fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.# ++Delete if adjunct++","+E-mail address+","+Contact time for this course+"]
 # Final values:
 nameF = ''
 roomF = ''
