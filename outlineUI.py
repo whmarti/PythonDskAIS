@@ -163,9 +163,6 @@ class Root(Tk):
                                         break
                         if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
                 document.save('docs/'+gv.targetDoc)
-<<<<<<< HEAD
-                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile="TempleteCO.docx")
-=======
                 # dirname = askdirectory()
                 # if dirname!='':
                 #     document.save(dirname+'/'+gv.targetDoc)
@@ -177,7 +174,7 @@ class Root(Tk):
                 #Kim changed filename format on 11/11 (Need to add Initial of User Name later)
                 file_name = gv.courseCode + "-T" + gv.trimester_cb.get() + "-" + gv.year_cb.get() + "-CourseOutline-Draft1-" + ".docx"
                 file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile=file_name)
->>>>>>> 72294f012f708b7c25e409b037f24610753b770d
+
                 if file_path is not None:
                     #gv.originalDoc=file_path.name
                     gv.state = True
