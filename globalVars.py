@@ -19,7 +19,7 @@ fName = ''
 
 # Controls Margins:
 xPosL=50  #Labels
-xPosF=160 #Fields
+xPosF=170 #Fields
 yPos=110  #Vertical
 yBtnPos=110  #Button Upload
 
@@ -40,6 +40,7 @@ stColor='Black' # Sub Color
 # Labels:
 lbFont='Arial'
 lbSize=10
+lbCColor='#7E7474'
 #SegmentLine
 bgSL='#5a7684'   # Seg Line Color
 #-------------------------------------------------------------------------
@@ -50,7 +51,7 @@ state = FALSE
 # Controls:
 years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
-fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#   ++Delete if adjunct++","+E-mail address+","+Contact time for this course+"]
+fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#","+E-mail address+","+Contact time for this course+"]
 # Final values:
 nameF = ''
 roomF = ''
@@ -74,6 +75,7 @@ mxph3=4
 mxEm=70
 # Validation Logic:
 global vcmd   #Validate the integrity of the value.
+nameRegex = r'^[A-Z][a-z]{2,}(\s[A-Z][a-zA-Z]{2,}){1,}$'   #Validate the integrity of the name.
 emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'   #Validate the integrity of the email.
 textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
 alphanumRegex = r'^[A-Za-z0-9 ]*$'   #Validate the integrity of alphanumeric fields.
