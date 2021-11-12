@@ -49,23 +49,27 @@ bgSL='#5a7684'   # Seg Line Color
 # Logic:
 state = FALSE
 # Controls:
+days = ('Select >', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday')
 years = ('Select >', '2021', '2022', '2023')
 months = ('Select >','1', '2', '3')
 fieldsDocx = ["+Lecturer Name+","+Room #+","+815-1717+ ext.#","+E-mail address+","+Contact time for this course+"]
+
 # Final values:
 nameF = ''
 roomF = ''
 phoneF = ''
+hourI = ''
 hourF = ''
+contactHour = ''
 #-------------------------------------------------------------------------
 
 #Form Variables ----------------------------------------------------------
 
 # Controls:
 global upld
-global trimester_cb, year_cb , empty_ch
+global trimester_cb, year_cb, day_cb , empty_ch
 rbCoursePerson=''
-global entry_name, entry_room, entry_phone1, entry_phone2, entry_ext, entry_email, entry_contHour, entry_contMinute
+global entry_name, entry_Lname, entry_room, entry_phone1, entry_ext, entry_email, entry_contHour, entry_contMinute, entry_contHourF, entry_contMinuteF
 #Max. fields length:
 mxNa=50
 mxRo=10
@@ -75,9 +79,10 @@ mxph3=4
 mxEm=70
 # Validation Logic:
 global vcmd   #Validate the integrity of the value.
-nameRegex = r'^[A-Z][a-z]{2,}(\s[A-Z][a-zA-Z]{1,}){1,}$'   #Validate the integrity of the name.
-emailRegex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'   #Validate the integrity of the email.
+nameRegex = r"^([A-Z][a-z]{1,}){1,}(\s[A-Z][a-zA-Z]{1,}){0,}?$"   #Validate the integrity of the name.
+emailRegex = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'   #Validate the integrity of the email.
 textRegex = r'^[A-Za-z@. ]*$'   #Validate the integrity of text fields.
+textNumRegex = r'^[A-Za-z0-9@. ]*$'   #Validate the integrity of text fields.
 alphanumRegex = r'^[A-Za-z0-9 ]*$'   #Validate the integrity of alphanumeric fields.
 hourRegex = r'^(0[0-9]|1[0-9]|2[0-3])$'
 minRegex = r'^[0-5][0-9]$'
