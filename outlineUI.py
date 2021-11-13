@@ -288,7 +288,7 @@ class Root(Tk):
         gv.entry_ext.config(width=5)
         gv.entry_ext.place(x=gv.xPosF+95,y=gv.yPos)
         label_phoneEx =tk.Label(self,text="p.e. (2013451717 ext 1245)", fg=gv.lbCColor, width=21,font=(gv.lbFont,gv.lbSize-2))
-        label_phoneEx.place(x=gv.xPosF+265,y=gv.yPos+1)
+        label_phoneEx.place(x=gv.xPosF+268,y=gv.yPos+1)
         gv.yPos+=30
         label_email =tk.Label(self,text="Email", width=5,font=(gv.lbFont,gv.lbSize))
         label_email.place(x=gv.xPosL,y=gv.yPos)
