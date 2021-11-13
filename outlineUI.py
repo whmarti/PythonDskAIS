@@ -183,11 +183,13 @@ class Root(Tk):
                                         break
                         if fieldsCopied==len(gv.fieldsDocx) and flag==1: break
                 document.save('docs/'+gv.targetDoc)
-                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile="TempleteCO.docx")
+                fname = gv.entry_name.get().title()
+                lname = gv.entry_Lname.get().title()
+                file_name = gv.courseCode + "-" + gv.trimester_cb.get() + "-" + gv.year_cb.get() +"-CourseOutline-draft1-"+fname[0]+lname[0]
+                file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile = file_name+".docx")
                 if file_path is not None:
-                    gv.originalDoc=file_path.name
                     gv.state = True
-                    gv.CO_Doc.save(gv.originalDoc)
+                    gv.CO_Doc.save(file_path.name)
                     if self.empty.get()=="1":
                         self.clearControls()
                     # messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
@@ -625,6 +627,7 @@ class Root(Tk):
         #values = docx.Document(gv.originalDoc).paragraphs
         next_ = afterNext = None
         isCourseDuration = False
+        isDeleted = False
         length = len(values) 
         valuesFromCD = [gv.courseCode, gv.courseTitle, gv.prerequisites, gv.corequisites, gv.restrictions, gv.nzqfLevel, gv.credits, gv.courseAims, gv.learningOutcomes]
         
@@ -717,10 +720,17 @@ class Root(Tk):
                 else:
                     delete_paragraph(par)
             
-            if "Course Coordinator" in par.text:
-                if self.rbCoursePerson.get() != "Course Coordinator":
+            if self.rbCoursePerson.get() == "Lecturer":
+                if "Course Coordinator" in par.text and isDeleted == False:
                     for i in range(6):
                         delete_paragraph(values[index+i])
+                    isDeleted = True
+            
+            if self.rbCoursePerson.get() == "Course Coordinator":
+                if "+Lecturer Name+" in par.text and isDeleted == False:
+                    for i in range(6):
+                        delete_paragraph(values[index+i])
+                    isDeleted = True
             
             def delete_paragraph(paragraph):
                 p = paragraph._element
