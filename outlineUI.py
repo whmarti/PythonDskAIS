@@ -189,13 +189,15 @@ class Root(Tk):
                 file_path = asksaveasfile(mode='w', filetypes=[('Doc Files', '*docx')], initialfile = file_name+".docx")
                 if file_path is not None:
                     gv.state = True
-                    gv.CO_Doc.save(file_path.name)
+                    #gv.CO_Doc.save(file_path.name)
+                    document.save(file_path.name)
                     if self.empty.get()=="1":
                         self.clearControls()
                     # messagebox.showinfo(title="Successful process", message='File updated, Course Outline generated.')
                     if messagebox.askokcancel("Successful process","File updated, Course Outline generated.\nDo you want to open this file?"):
                         print("Escogio: "+str(res))
-                        os.startfile(gv.originalDoc)
+                        #os.startfile(gv.originalDoc)
+                        os.startfile(file_path.name)
 
         except docx.opc.exceptions.PackageNotFoundError:
             messagebox.showerror(title="Error:", message='The document docOrigin/TempleteCO.docx is not accesible. Please verify that it is in the folder.')
