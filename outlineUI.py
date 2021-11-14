@@ -119,8 +119,11 @@ class Root(Tk):
         w.config( background=gv.bgSL)
 
     def update_click(self):
-        self.upd_Docum_Docm()
-        self.upd_Docum_Frm()
+        if len(gv.fName)>0:
+            self.upd_Docum_Docm()
+            self.upd_Docum_Frm()
+        else:
+            messagebox.showinfo("Document missing","You have not chosen the document yet, please select it first.")
 
     def set_Final_Formval(self):
 
@@ -543,55 +546,60 @@ class Root(Tk):
 #<editor-fold desc="Document Functions">
     
     def upd_Docum_Docm(self): 
+        try:
+            gv.CO_Doc = docx.Document(gv.originalDoc)
+
+            inputDoc = docx.Document(gv.original)
+            print(gv.original)
+
+            def read_docx_table(doc, table_num=1, nhader=1):
+                table = doc.tables[table_num-1]
+                data = [[cell.text for cell in row.cells] for row in table.rows]
+            
+                df = pd.DataFrame(data)
+
+                if nhader == 1 :
+                    df = df.rename(columns=df.iloc[0]).drop(df.index[0]).reset_index(drop=True)
+
+                return df
+
+            df = read_docx_table(inputDoc,1,0)
         
-        gv.CO_Doc = docx.Document(gv.originalDoc)
+            #Get the first Column
+            gv.firstColumn = pd.Series(df[:][0], name="s")
+            #Programme
+            gv.programme = df[gv.firstColumn.isin(['Programme']) == True].iloc[0, 1]
+            #Course Code
+            gv.courseCode = df[gv.firstColumn.isin(['Course Code']) == True].iloc[0, 1]
+            #Course Title
+            gv.courseTitle = df[gv.firstColumn.isin(['Course Title']) == True].iloc[0, 1]
+            #NZQF Level
+            gv.nzqfLevel = df[gv.firstColumn.isin(['NZQF Level']) == True].iloc[0, 1]
+            #Credits
+            gv.credits = df[gv.firstColumn.isin(['Credits']) == True].iloc[0, 1]
+            #Prerequisites
+            gv.prerequisites = df[gv.firstColumn.isin(['Prerequisites']) == True].iloc[0, 1]
+            # #Co-requisites
+            gv.corequisites = df[gv.firstColumn.isin(['Co-requisites']) == True].iloc[0, 1]
+            # #Restrictions
+            gv.restrictions = df[gv.firstColumn.isin(['Restrictions']) == True].iloc[0, 1]
+            #Course Aims
+            gv.courseAims = df[gv.firstColumn.isin(['Course Aims']) == True].iloc[0, 1]
+            #Get rows out of 'lo' series starts its second row because the first low is 'The learners will be able to:'
+            gv.learningOutcomes = df[gv.firstColumn.str.contains('Learning\nOutcomes')].iloc[1:, 2]
+            #Average Learning
+            gv.avgLearning = df[gv.firstColumn.str.contains('Average')].iloc[:, [1,3,4,5]]
+            #Summative Assessment 
+            gv.sumAssessment = df[gv.firstColumn.str.contains('Summative')].iloc[1:, [1,4,5]]  
 
-        inputDoc = docx.Document(gv.original)
-        print(gv.original)
+            root.changeHeader()
+            root.copySumAssesment()
+            root.replaceInfo()
+        except docx.opc.exceptions.PackageNotFoundError:
+            messagebox.showerror(title="Error:", message='The document docOrigin/TempleteCO.docx is not accesible. Please verify that it is in the folder.')
+        except PermissionError:
+            messagebox.showerror(title="Error:", message='The document is not accesible. It can be open if so close it, please check.')
 
-        def read_docx_table(doc, table_num=1, nhader=1):
-            table = doc.tables[table_num-1]
-            data = [[cell.text for cell in row.cells] for row in table.rows]
-        
-            df = pd.DataFrame(data)
-
-            if nhader == 1 :
-                df = df.rename(columns=df.iloc[0]).drop(df.index[0]).reset_index(drop=True)
-
-            return df
-
-        df = read_docx_table(inputDoc,1,0)
-    
-        #Get the first Column
-        gv.firstColumn = pd.Series(df[:][0], name="s")
-        #Programme
-        gv.programme = df[gv.firstColumn.isin(['Programme']) == True].iloc[0, 1]
-        #Course Code
-        gv.courseCode = df[gv.firstColumn.isin(['Course Code']) == True].iloc[0, 1]
-        #Course Title
-        gv.courseTitle = df[gv.firstColumn.isin(['Course Title']) == True].iloc[0, 1]
-        #NZQF Level
-        gv.nzqfLevel = df[gv.firstColumn.isin(['NZQF Level']) == True].iloc[0, 1]
-        #Credits
-        gv.credits = df[gv.firstColumn.isin(['Credits']) == True].iloc[0, 1]
-        #Prerequisites
-        gv.prerequisites = df[gv.firstColumn.isin(['Prerequisites']) == True].iloc[0, 1]
-        # #Co-requisites
-        gv.corequisites = df[gv.firstColumn.isin(['Co-requisites']) == True].iloc[0, 1]
-        # #Restrictions
-        gv.restrictions = df[gv.firstColumn.isin(['Restrictions']) == True].iloc[0, 1]
-        #Course Aims
-        gv.courseAims = df[gv.firstColumn.isin(['Course Aims']) == True].iloc[0, 1]
-        #Get rows out of 'lo' series starts its second row because the first low is 'The learners will be able to:'
-        gv.learningOutcomes = df[gv.firstColumn.str.contains('Learning\nOutcomes')].iloc[1:, 2]
-        #Average Learning
-        gv.avgLearning = df[gv.firstColumn.str.contains('Average')].iloc[:, [1,3,4,5]]
-        #Summative Assessment 
-        gv.sumAssessment = df[gv.firstColumn.str.contains('Summative')].iloc[1:, [1,4,5]]  
-
-        root.changeHeader()
-        root.copySumAssesment()
-        root.replaceInfo()
         
     def changeHeader(self):
         section = gv.CO_Doc.sections[0]
@@ -744,11 +752,11 @@ class Root(Tk):
 
 if __name__ == '__main__':
     root = Root()
-    root.iconbitmap('img/icon.ico')
-    logoImg = (Image.open("img/logo.jpg"))
+    # root.iconbitmap('icon.ico')  #Comment to linux setup
+    logoImg = (Image.open("logo.png"))
     resizedImg = logoImg.resize((120,50), Image.ANTIALIAS)
-    logoImg = ImageTk.PhotoImage(resizedImg)
-    label = tk.Label(root, image=logoImg).place(x=280, y=10)
+    # logoImg = ImageTk.PhotoImage(resizedImg)   #Comment to linux setup
+    # label = tk.Label(root, image=logoImg).place(x=280, y=10)   #Comment to linux setup
     root.bind('<Return>', root.funcEnter)
 
    #Built of UI:
