@@ -571,37 +571,51 @@ class Root(Tk):
                 return df
 
             df = read_docx_table(inputDoc,1,0)
-        
-            #Get the first Column
-            gv.firstColumn = pd.Series(df[:][0], name="s")
-            #Programme
-            gv.programme = df[gv.firstColumn.isin(['Programme']) == True].iloc[0, 1]
-            #Course Code
-            gv.courseCode = df[gv.firstColumn.isin(['Course Code']) == True].iloc[0, 1]
-            #Course Title
-            gv.courseTitle = df[gv.firstColumn.isin(['Course Title']) == True].iloc[0, 1]
-            #NZQF Level
-            gv.nzqfLevel = df[gv.firstColumn.isin(['NZQF Level']) == True].iloc[0, 1]
-            #Credits
-            gv.credits = df[gv.firstColumn.isin(['Credits']) == True].iloc[0, 1]
-            #Prerequisites
-            gv.prerequisites = df[gv.firstColumn.isin(['Prerequisites']) == True].iloc[0, 1]
-            # #Co-requisites
-            gv.corequisites = df[gv.firstColumn.isin(['Co-requisites']) == True].iloc[0, 1]
-            # #Restrictions
-            gv.restrictions = df[gv.firstColumn.isin(['Restrictions']) == True].iloc[0, 1]
-            #Course Aims
-            gv.courseAims = df[gv.firstColumn.isin(['Course Aims']) == True].iloc[0, 1]
-            #Get rows out of 'lo' series starts its second row because the first low is 'The learners will be able to:'
-            gv.learningOutcomes = df[gv.firstColumn.str.contains('Learning\nOutcomes')].iloc[1:, 2]
-            #Average Learning
-            gv.avgLearning = df[gv.firstColumn.str.contains('Average')].iloc[:, [1,3,4,5]]
-            #Summative Assessment 
-            gv.sumAssessment = df[gv.firstColumn.str.contains('Summative')].iloc[1:, [1,4,5]]  
 
-            root.changeHeader()
-            root.copySumAssesment()
-            root.replaceInfo()
+            strArray = ['Programme', 'Course Code', 'Course Title', 'NZQF Level', 'Learning\nOutcomes','Prerequisites','Co-requisites','Restrictions','Course Aims']
+            gv.firstColumn = pd.Series(df[:][0], name="s")
+            
+            matchCnt = 0
+            for value in strArray:
+                if value in gv.firstColumn.unique():
+                    matchCnt = matchCnt + 1
+           
+            if matchCnt >= 6:
+                #Get the first Column
+                gv.firstColumn = pd.Series(df[:][0], name="s")
+                #Programme
+                gv.programme = df[gv.firstColumn.isin(['Programme']) == True].iloc[0, 1]
+                #Course Code
+                gv.courseCode = df[gv.firstColumn.isin(['Course Code']) == True].iloc[0, 1]
+                #Course Title
+                gv.courseTitle = df[gv.firstColumn.isin(['Course Title']) == True].iloc[0, 1]
+                #NZQF Level
+                gv.nzqfLevel = df[gv.firstColumn.isin(['NZQF Level']) == True].iloc[0, 1]
+                #Credits
+                gv.credits = df[gv.firstColumn.isin(['Credits']) == True].iloc[0, 1]
+                #Prerequisites
+                gv.prerequisites = df[gv.firstColumn.isin(['Prerequisites']) == True].iloc[0, 1]
+                # #Co-requisites
+                gv.corequisites = df[gv.firstColumn.isin(['Co-requisites']) == True].iloc[0, 1]
+                # #Restrictions
+                gv.restrictions = df[gv.firstColumn.isin(['Restrictions']) == True].iloc[0, 1]
+                #Course Aims
+                gv.courseAims = df[gv.firstColumn.isin(['Course Aims']) == True].iloc[0, 1]
+                #Get rows out of 'lo' series starts its second row because the first low is 'The learners will be able to:'
+                gv.learningOutcomes = df[gv.firstColumn.str.contains('Learning\nOutcomes')].iloc[1:, 2]
+                #Average Learning
+                gv.avgLearning = df[gv.firstColumn.str.contains('Average')].iloc[:, [1,3,4,5]]
+                #Summative Assessment 
+                gv.sumAssessment = df[gv.firstColumn.str.contains('Summative')].iloc[1:, [1,4,5]]  
+
+                root.changeHeader()
+                root.copySumAssesment()
+                root.replaceInfo()
+            else: 
+                messagebox.showerror(title="Error:", message='Please check if the document you uploaded is in Course Descriptor Format.')
+                return
+                
+
         except docx.opc.exceptions.PackageNotFoundError:
             messagebox.showerror(title="Error:", message='The document docOrigin/TempleteCO.docx is not accesible. Please verify that it is in the folder.')
         except PermissionError:
