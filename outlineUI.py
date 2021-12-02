@@ -129,7 +129,8 @@ class Root(Tk):
 
         gv.nameF = gv.entry_name.get().title() + " "+ gv.entry_Lname.get().title()
         gv.roomF = gv.entry_room.get().upper()
-        gv.phoneF = gv.entry_phone1.get() + " ext. " +  gv.entry_ext.get()
+        # gv.phoneF = gv.entry_phone1.get() + " ext. " +  gv.entry_ext.get()
+        gv.phoneF = "(+64)8 9 815 1717 ext. " +  gv.entry_ext.get()
         gv.hourI= gv.hourI="0"+gv.entry_contHour.get()  if len(gv.entry_contHour.get())==1 else gv.entry_contHour.get()
         gv.hourI= gv.hourI+":0"+gv.entry_contMinute.get() if len(gv.entry_contMinute.get())==1 else gv.hourI+":"+gv.entry_contMinute.get()
         gv.hourF= gv.hourF="0"+gv.entry_contHourF.get()  if len(gv.entry_contHourF.get())==1 else gv.entry_contHourF.get()
@@ -176,8 +177,8 @@ class Root(Tk):
                                 if len(valuesDocx[i])>0:
                                     tmp_text = par.text
                                     if "ext.#" in gv.fieldsDocx[i]:
-                                        if gv.entry_phone1.get()!="":
-                                            tmp_text = tmp_text.replace(gv.fieldsDocx[i],valuesDocx[i])
+                                        # if gv.entry_phone1.get()!="":
+                                            tmp_text = tmp_text.replace(gv.fieldsDocx[i], "(+64) 9 815 1717")
                                             par.text=tmp_text
                                             break
                                     else:
@@ -284,18 +285,19 @@ class Root(Tk):
         gv.yPos+=30
         label_Phone = tk.Label(self,text="Phone", width=5,font=(gv.lbFont,gv.lbSize))
         label_Phone.place(x=gv.xPosL,y=gv.yPos)
-        label_PhoneInd = tk.Label(self,text="(+64)", width=5,font=(gv.lbFont,gv.lbSize-1))
-        label_PhoneInd.place(x=gv.xPosL+79,y=gv.yPos)
-        gv.entry_phone1=tk.Entry(self, textvariable = self.ph1Value, validate='all',validatecommand=(gv.vcmd, '%P'))
-        gv.entry_phone1.config(width=10)
-        gv.entry_phone1.place(x=gv.xPosF,y=gv.yPos)
-        label_dashExt =tk.Label(self,text=" ext", width=3,font=(gv.lbFont,gv.lbSize))
-        label_dashExt.place(x=gv.xPosF+63,y=gv.yPos-2)
+        label_PhoneInd = tk.Label(self,text="(+64) 9 815 1717", width=13,font=(gv.lbFont,gv.lbSize-1))
+        label_PhoneInd.place(x=gv.xPosL+112,y=gv.yPos)
+        #gv.entry_phone1=tk.Entry(self, textvariable = self.ph1Value, validate='all',validatecommand=(gv.vcmd, '%P'))
+        #gv.entry_phone1.config(width=10)
+        #gv.entry_phone1.place(x=gv.xPosF,y=gv.yPos)
+        #self.extCb= tk.Checkbutton(self, text="ext", padx=5, variable = self.extCbValue, onvalue = 1, offvalue = 0)
+        label_dashExt = tk.Label(self,text=" ext", width=3,font=(gv.lbFont,gv.lbSize))
+        label_dashExt.place(x=gv.xPosF+103,y=gv.yPos-2)
         gv.entry_ext=tk.Entry(self, textvariable = self.ph3Value, validate='all',validatecommand=(gv.vcmd, '%P'))
         gv.entry_ext.config(width=5)
-        gv.entry_ext.place(x=gv.xPosF+95,y=gv.yPos)
-        label_phoneEx =tk.Label(self,text="p.e. (2013451717 ext 1245)", fg=gv.lbCColor, width=21,font=(gv.lbFont,gv.lbSize-2))
-        label_phoneEx.place(x=gv.xPosF+268,y=gv.yPos+1)
+        gv.entry_ext.place(x=gv.xPosF+145,y=gv.yPos)
+        label_phoneEx =tk.Label(self,text="e.g.(+64) 9 815 1717 ext. 123", fg=gv.lbCColor, width=26,font=(gv.lbFont,gv.lbSize-2))
+        label_phoneEx.place(x=gv.xPosF+265,y=gv.yPos+1)
         gv.yPos+=30
         label_email =tk.Label(self,text="Email", width=5,font=(gv.lbFont,gv.lbSize))
         label_email.place(x=gv.xPosL,y=gv.yPos)
@@ -353,6 +355,9 @@ class Root(Tk):
 #</editor-fold>
 
 #<editor-fold desc="Form Functions">
+    
+    
+
     def ableControls(self,state):
         if state:
             gv.trimester_cb['state'] = tk.NORMAL
@@ -360,7 +365,7 @@ class Root(Tk):
             gv.entry_name['state'] = tk.NORMAL
             gv.entry_Lname['state'] = tk.NORMAL
             gv.entry_room['state'] = tk.NORMAL
-            gv.entry_phone1['state'] = tk.NORMAL
+            #gv.entry_phone1['state'] = tk.NORMAL
             gv.entry_ext['state'] = tk.NORMAL
             gv.entry_email['state'] = tk.NORMAL
             gv.entry_contHour['state'] = tk.NORMAL
@@ -374,7 +379,7 @@ class Root(Tk):
             gv.entry_name['state'] = tk.DISABLED
             gv.entry_Lname['state'] = tk.DISABLED
             gv.entry_room['state'] = tk.DISABLED
-            gv.entry_phone1['state'] = tk.DISABLED
+            #gv.entry_phone1['state'] = tk.DISABLED
             gv.entry_ext['state'] = tk.DISABLED
             gv.entry_email['state'] = tk.DISABLED
             gv.entry_contHour['state'] =  tk.DISABLED
@@ -382,6 +387,8 @@ class Root(Tk):
             gv.entry_contHourF['state'] = tk.DISABLED
             gv.entry_contMinuteF['state'] = tk.DISABLED
             gv.day_cb['state'] = tk.DISABLED
+
+            
 
     def validateForm(self):
         try:
@@ -421,10 +428,10 @@ class Root(Tk):
                 messagebox.showinfo(title="INFORMATION", message='The Room is empty, please enter It!')
                 gv.entry_room.focus_set()
                 return False
-            if len(gv.entry_phone1.get().strip()) == 0:
-                messagebox.showinfo(title="INFORMATION", message='The Phone is empty, please enter It!')
-                gv.entry_phone1.focus_set()
-                return False
+            # if len(gv.entry_phone1.get().strip()) == 0:
+            #     messagebox.showinfo(title="INFORMATION", message='The Phone is empty, please enter It!')
+            #     gv.entry_phone1.focus_set()
+            #     return False
             if len(gv.entry_email.get().strip()) == 0:
                 messagebox.showinfo(title="INFORMATION", message='The Email is empty, please enter It!')
                 gv.entry_email.focus_set()
@@ -466,8 +473,8 @@ class Root(Tk):
         gv.entry_Lname.insert(0, '')
         gv.entry_room.delete(0,"end")
         gv.entry_room.insert(0, '')
-        gv.entry_phone1.delete(0,"end")
-        gv.entry_phone1.insert(0, '')
+        #gv.entry_phone1.delete(0,"end")
+        #gv.entry_phone1.insert(0, '')
         gv.entry_ext.delete(0,"end")
         gv.entry_ext.insert(0, '')
         gv.entry_email.delete(0,"end")
@@ -752,11 +759,11 @@ class Root(Tk):
 
 if __name__ == '__main__':
     root = Root()
-    # root.iconbitmap('icon.ico')  #Comment to linux setup
+    root.iconbitmap('icon.ico')  #Comment to linux setup
     logoImg = (Image.open("logo.png"))
     resizedImg = logoImg.resize((120,50), Image.ANTIALIAS)
-    # logoImg = ImageTk.PhotoImage(resizedImg)   #Comment to linux setup
-    # label = tk.Label(root, image=logoImg).place(x=280, y=10)   #Comment to linux setup
+    logoImg = ImageTk.PhotoImage(resizedImg)   #Comment to linux setup
+    label = tk.Label(root, image=logoImg).place(x=280, y=10)   #Comment to linux setup
     root.bind('<Return>', root.funcEnter)
 
    #Built of UI:
